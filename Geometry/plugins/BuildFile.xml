@@ -1,0 +1,20 @@
+<use   name="CondCore/PopCon"/>
+<use   name="CondFormats/DataRecord"/>
+<use   name="CondFormats/GEMObjects"/>
+<use   name="CondFormats/Serialization"/>
+<use   name="FWCore/Framework"/>
+<use   name="FWCore/ParameterSet"/>
+<use   name="FWCore/Utilities"/>
+<use   name="CondFormats/GeometryObjects"/>
+<use   name="DetectorDescription/Core"/>
+<use   name="DetectorDescription/Parser"/>
+<use   name="Geometry/MuonNumbering"/>
+<use   name="Geometry/Records"/>
+<use   name="MagneticField/Records"/>
+<use   name="GeometryReaders/XMLIdealGeometryESSource"/>
+<use   name="Utilities/StorageFactory"/>
+<use   name="FWCore/Sources"/>
+<use   name="gemqc8/GeometrySrc"/>
+<library   file="*.cc" name="gemqc8GeometryPlugins">
+  <flags  EDM_PLUGIN="1"/>
+</library>

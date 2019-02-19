@@ -1,0 +1,11 @@
+<lcgdict>
+
+<class name="GEMVfatStatusDigiQC8" ClassVersion="5">
+ <version ClassVersion="5" checksum="4163104838"/>
+</class>
+<class name="std::vector<GEMVfatStatusDigiQC8>"/>
+<class name="std::map<GEMDetId,std::vector<GEMVfatStatusDigiQC8> >"/>
+<class name="MuonDigiCollection<GEMDetId,GEMVfatStatusDigiQC8>"/> 
+<class name="edm::Wrapper<MuonDigiCollection<GEMDetId,GEMVfatStatusDigiQC8> >" splitLevel="0"/>
+
+</lcgdict>

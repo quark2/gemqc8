@@ -40,7 +40,6 @@
 <use name="JetMETCorrections/JetCorrector"/>
 <use name="Utilities/StorageFactory"/>
 <use name="FWCore/Sources"/>
-<use name="gemqc8/GeometrySrc"/>
 <export>
   <lib name="1"/>
 </export>
