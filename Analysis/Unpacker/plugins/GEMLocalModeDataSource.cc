@@ -91,7 +91,7 @@ GEMLocalModeDataSource::GEMLocalModeDataSource(const edm::ParameterSet & pset, e
     throw cms::Exception(ss.str());
   }
 
-  m_runnumber = m_fileindex; // dummy run number
+  if ( m_runnumber < 0 ) m_runnumber = m_fileindex; // dummy run number
  }
 
 

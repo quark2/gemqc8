@@ -16,6 +16,7 @@ import FWCore.ParameterSet.VarParsing as VarParsing
 options = VarParsing.VarParsing('analysis')
 
 run_number = runConfig.RunNumber
+run_number += 20000
 
 options.register("runNum",run_number,
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -136,8 +137,8 @@ process.GEMCabling = cms.ESSource("PoolDBESSource",
                                   CondDB,
                                   toGet = cms.VPSet(cms.PSet(
                                                              record = cms.string('GEMeMapRcd'),
-																														 tag = cms.string('GEMeMap_v3')
-                                                             #tag = cms.string('GEMeMap_v6')
+																														 #tag = cms.string('GEMeMap_v3')
+                                                             tag = cms.string('GEMeMap_v6')
                                                              )
                                                     )
                                   )
@@ -247,12 +248,27 @@ process.TFileService = cms.Service("TFileService",
                                    fileName = cms.string('validation_'+strOutput)
                                    )
 
+process.load("DQM.Integration.config.environment_cfi")
+process.dqmEnv.subSystemFolder = "GEM"
+process.dqmEnv.eventInfoFolder = "EventInfo"
+process.dqmSaver.path = ""
+process.dqmSaver.tag = "GEM"
+
+#process.dqmSaver.saveAtJobEnd =cms.untracked.bool(True)
+#process.dqmSaver.forceRunNumber = cms.untracked.int32(run_number)
+
+process.load("DQM.GEM.GEMDQM_cff")
+
+process.GEMDQMSource.recHitsInputLabel = cms.InputTag("gemRecHits")
+
 # Path and EndPath definitions
 process.rawTOhits_step = cms.Path(process.muonGEMDigis+process.gemRecHits)
 process.reconstruction_step = cms.Path(process.GEMCosmicMuonForQC8)
-process.validation_step = cms.Path(process.ValidationQC8)
+process.validation_step = cms.Path(process.ValidationQC8+process.GEMDQM)
 process.endjob_step = cms.EndPath(process.endOfProcess)
-process.FEVTDEBUGHLToutput_step = cms.EndPath(process.FEVTDEBUGHLToutput)
+process.FEVTDEBUGHLToutput_step = cms.EndPath(process.FEVTDEBUGHLToutput+process.dqmEnv+process.dqmSaver)
+
+process.MEtoEDMConverter.deleteAfterCopy = cms.untracked.bool(False)
 
 # Schedule definition
 process.schedule = cms.Schedule(process.rawTOhits_step,
