@@ -118,8 +118,6 @@ process.source = cms.Source(
                             hasFerolHeader = cms.untracked.bool(False),
                             runNumber = cms.untracked.int32(run_number),
                             )
-#process.source.fileNames = cms.untracked.vstring (["file:run000090_Cosmic_CERNQC8_2019-04-29_chunk_72.dat"])
-process.source.fileNames = cms.untracked.vstring (["file:run000101_Cosmic_CERNQC8_2019-05-07_chunk_75.dat"])
 														
 process.options = cms.untracked.PSet(
                                      SkipEvent = cms.untracked.vstring('ProductNotFound')
