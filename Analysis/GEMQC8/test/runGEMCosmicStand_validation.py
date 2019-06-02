@@ -34,7 +34,6 @@ options.register('mps',
                  VarParsing.VarParsing.varType.int,
                  "List of MPs to process")
 
-
 options.parseArguments()
 
 # The superchambers in the 15 slots
@@ -63,11 +62,11 @@ for j in range (0,3):
             SuperChSeedingLayers[i*2]=1
             SuperChSeedingLayers[i*2+1]=3
             break
-  for i in range (5*(j+1)-1,5*j-1,-1):
-      if (SuperChType[i]!='0'):
-          SuperChSeedingLayers[i*2]=4
-          SuperChSeedingLayers[i*2+1]=2
-          break
+    for i in range (5*(j+1)-1,5*j-1,-1):
+        if (SuperChType[i]!='0'):
+            SuperChSeedingLayers[i*2]=4
+            SuperChSeedingLayers[i*2+1]=2
+            break
 
 print(SuperChSeedingLayers)
 
@@ -96,9 +95,9 @@ for i in xrange(len(SuperChType)):
     if SuperChType[i]=='S' : size = 'S'
     if SuperChType[i]!='0' :
         geomFile = 'Analysis/GEMQC8/data/GeometryFiles/gem11'+size+column_row+'.xml'
-		print(geomFile)
-		process.XMLIdealGeometryESSource.geomXMLFiles.append(geomFile)
-		print('-> Appended')
+        print(geomFile)
+        process.XMLIdealGeometryESSource.geomXMLFiles.append(geomFile)
+        print('-> Appended')
 
 # Config importation & settings
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(options.eventsPerJob))
@@ -152,17 +151,14 @@ process.tmtFilter.mpList = cms.untracked.vint32(options.mps)
 
 strOutput = runConfig.OutputFileName
 
-process.FEVTDEBUGHLToutput = cms.OutputModule("PoolOutputModule",
-                                              SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('validation_step')
-                                                                                ),
-                                              dataset = cms.untracked.PSet(dataTier = cms.untracked.string('RECO'),
-                                                                           filterName = cms.untracked.string('')
-                                                                           ),
-                                              eventAutoFlushCompressedSize = cms.untracked.int32(10485760),
-                                              fileName = cms.untracked.string('file:'+strOutput),
-                                              outputCommands = cms.untracked.vstring( ('keep *')),
-                                              splitLevel = cms.untracked.int32(0)
-                                              )
+process.output = cms.OutputModule("PoolOutputModule",
+                                  SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('validation_step')),
+                                  dataset = cms.untracked.PSet(dataTier = cms.untracked.string('RECO'),filterName = cms.untracked.string('')),
+                                  eventAutoFlushCompressedSize = cms.untracked.int32(10485760),
+                                  fileName = cms.untracked.string('file:'+strOutput),
+                                  outputCommands = cms.untracked.vstring( ('keep *')),
+                                  splitLevel = cms.untracked.int32(0)
+                                  )
 
 # Additional output definition
 from Configuration.AlCa.GlobalTag import GlobalTag
@@ -259,7 +255,7 @@ process.rawTOhits_step = cms.Path(process.muonGEMDigis+process.gemRecHits)
 process.reconstruction_step = cms.Path(process.GEMCosmicMuonForQC8)
 process.validation_step = cms.Path(process.ValidationQC8+process.GEMDQM)
 process.endjob_step = cms.EndPath(process.endOfProcess)
-process.FEVTDEBUGHLToutput_step = cms.EndPath(process.FEVTDEBUGHLToutput+process.dqmEnv+process.dqmSaver)
+process.FEVTDEBUGHLToutput_step = cms.EndPath(process.output+process.dqmEnv+process.dqmSaver)
 
 process.MEtoEDMConverter.deleteAfterCopy = cms.untracked.bool(False)
 
@@ -268,7 +264,7 @@ process.schedule = cms.Schedule(process.rawTOhits_step,
                                 process.reconstruction_step,
                                 process.validation_step,
                                 process.endjob_step,
-                                process.FEVTDEBUGHLToutput_step
+                                process.output_step
                                 )
 
 # enable validation event filtering

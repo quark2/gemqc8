@@ -43,9 +43,9 @@ print(SuperChType)
 # Define and find column type. Default is L. If it is found an S in a column, that column type becomes S.
 colType = ['S','S','S']
 for col in range(0,3):
-	for row in range(0,5):
-		if (SuperChType[col*5+row]=='L'):
-			colType[col] = 'L'
+    for row in range(0,5):
+        if (SuperChType[col*5+row]=='L'):
+            colType[col] = 'L'
 
 print(colType)
 
@@ -53,21 +53,38 @@ print(colType)
 SuperChSeedingLayers = []
 
 for i in range (0,30):
-	SuperChSeedingLayers.append(0)
+    SuperChSeedingLayers.append(0)
 
 for j in range (0,3):
-	for i in range (5*j,5*(j+1)):
-		if (SuperChType[i]!='0'):
-			SuperChSeedingLayers[i*2]=1
-			SuperChSeedingLayers[i*2+1]=3
-			break
-	for i in range (5*(j+1)-1,5*j-1,-1):
-		if (SuperChType[i]!='0'):
-			SuperChSeedingLayers[i*2]=4
-			SuperChSeedingLayers[i*2+1]=2
-			break
+    for i in range (5*j,5*(j+1)):
+        if (SuperChType[i]!='0'):
+            SuperChSeedingLayers[i*2]=1
+            SuperChSeedingLayers[i*2+1]=3
+            break
+    for i in range (5*(j+1)-1,5*j-1,-1):
+        if (SuperChType[i]!='0'):
+            SuperChSeedingLayers[i*2]=4
+            SuperChSeedingLayers[i*2+1]=2
+            break
 
 print(SuperChSeedingLayers)
+
+# Alignment of chambers
+trueDx = [0,0,0,0,0,\
+          0,0,0,0,0,\
+          0,0,0,0,0] # cm
+
+trueRz = [0,0,0,0,0,\
+          0,0,0,0,0,\
+          0,0,0,0,0] # degree
+
+shiftX = [0,0,0,0,0,\
+          0,0,0,0,0,\
+          0,0,0,0,0] # cm
+
+rotationZ = [0,0,0,0,0,\
+             0,0,0,0,0,\
+             0,0,0,0,0] # degree
 
 from Configuration.StandardSequences.Eras import eras
 
@@ -89,36 +106,34 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 # DEFINITION OF THE SUPERCHAMBERS INSIDE THE STAND
 for i in xrange(len(SuperChType)):
-	column_row = '_c%d_r%d' % ((i/5)+1, i%5+1)
-	if SuperChType[i]=='L' : size = 'L'
-	if SuperChType[i]=='S' : size = 'S'
-	if SuperChType[i]!='0' :
-		geomFile = 'Analysis/GEMQC8/data/GeometryFiles/gem11'+size+column_row+'.xml'
-		print(geomFile)
-		process.XMLIdealGeometryESSource.geomXMLFiles.append(geomFile)
-		print('-> Appended')
+    column_row = '_c%d_r%d' % ((i/5)+1, i%5+1)
+    if SuperChType[i]=='L' : size = 'L'
+    if SuperChType[i]=='S' : size = 'S'
+    if SuperChType[i]!='0' :
+        geomFile = 'Analysis/GEMQC8/data/GeometryFiles/gem11'+size+column_row+'.xml'
+        print(geomFile)
+        process.XMLIdealGeometryESSource.geomXMLFiles.append(geomFile)
+        print('-> Appended')
 
 # Config importation & settings
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(options.eventsPerJob))
 
 fpath =  "/eos/cms/store/group/dpg_gem/comm_gem/QC8_Commissioning/run"
 for i in range(6-len(str(run_number))):
-	fpath = fpath + '0'
+    fpath = fpath + '0'
 fpath = fpath + str(run_number) + "/"
 
 # Input source
-process.source = cms.Source(
-														"GEMLocalModeDataSource",
-														fileNames = cms.untracked.vstring ([fpath+x for x in os.listdir(fpath) if x.endswith(".dat")]),
-														skipEvents=cms.untracked.uint32(0),
-														fedId = cms.untracked.int32(888),  # which fedID to assign
-														hasFerolHeader = cms.untracked.bool(False),
-														runNumber = cms.untracked.int32(run_number),
-														)
+process.source = cms.Source("GEMLocalModeDataSource",
+                            fileNames = cms.untracked.vstring ([fpath+x for x in os.listdir(fpath) if x.endswith(".dat")]),
+                            skipEvents=cms.untracked.uint32(0),
+                            fedId = cms.untracked.int32(888),  # which fedID to assign
+                            hasFerolHeader = cms.untracked.bool(False),
+                            runNumber = cms.untracked.int32(run_number)
+                            )
 
-process.options = cms.untracked.PSet(
-																		 SkipEvent = cms.untracked.vstring('ProductNotFound')
-																		 )
+process.options = cms.untracked.PSet(SkipEvent = cms.untracked.vstring('ProductNotFound')
+                                     )
 
 ############## DB file #################
 from CondCore.CondDB.CondDB_cfi import *
@@ -129,13 +144,12 @@ eMapFile = 'GEMeMap_'+colType[0]+colType[1]+colType[2]+'.db'
 CondDB.connect = cms.string('sqlite_fip:Analysis/GEMQC8/data/EMapFiles/'+eMapFile)
 
 process.GEMCabling = cms.ESSource("PoolDBESSource",
-																	CondDB,
-																	toGet = cms.VPSet(cms.PSet(
-																														 record = cms.string('GEMeMapRcd'),
-																														 tag = cms.string('GEMeMap_v6')
-																														 )
-																										)
-																	)
+                                  CondDB,
+                                  toGet = cms.VPSet(cms.PSet(record = cms.string('GEMeMapRcd'),
+                                                             tag = cms.string('GEMeMap_v6')
+                                                             )
+                                                    )
+                                  )
 ####################################
 
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
@@ -146,6 +160,7 @@ process.load('EventFilter.L1TRawToDigi.tmtFilter_cfi')
 process.tmtFilter.mpList = cms.untracked.vint32(options.mps)
 
 # Output definition
+
 strOutput = runConfig.OutputFileName
 
 # Additional output definition
@@ -164,8 +179,8 @@ process.load('RecoLocalMuon.GEMRecHit.gemRecHits_cfi')
 process.gemRecHits = cms.EDProducer("GEMRecHitProducer",
                                     recAlgoConfig = cms.PSet(),
                                     recAlgo = cms.string('GEMRecHitStandardAlgo'),
-                                    gemDigiLabel = cms.InputTag("muonGEMDigis")
-																		)
+                                    gemDigiLabel = cms.InputTag("muonGEMDigis"),
+)
 
 # Reconstruction of muon track
 process.load('RecoMuon.TrackingTools.MuonServiceProxy_cff')
@@ -182,12 +197,16 @@ process.AlignmentTrackRecoQC8 = cms.EDProducer("AlignmentTrackRecoQC8",
                                                MulSigmaOnWindow = cms.double(runConfig.MulSigmaOnWindow),
                                                SuperChamberType = cms.vstring(SuperChType),
                                                SuperChamberSeedingLayers = cms.vdouble(SuperChSeedingLayers),
-                                               #isMC = cms.bool(False),
+                                               isMC = cms.bool(False),
+                                               shiftX = cms.vdouble(shiftX),
+                                               rotationZ = cms.vdouble(rotationZ),
+                                               trueDx = cms.vdouble(trueDx),
+                                               trueRz = cms.vdouble(trueRz),
                                                MuonSmootherParameters = cms.PSet(PropagatorAlong = cms.string('SteppingHelixPropagatorAny'),
-																																								 PropagatorOpposite = cms.string('SteppingHelixPropagatorAny'),
-																																								 RescalingFactor = cms.double(5.0)
-																																								 )
-																							 )
+                                                                                 PropagatorOpposite = cms.string('SteppingHelixPropagatorAny'),
+                                                                                 RescalingFactor = cms.double(5.0)
+                                                                                 ),
+                                               )
 process.AlignmentTrackRecoQC8.ServiceParameters.GEMLayers = cms.untracked.bool(True)
 process.AlignmentTrackRecoQC8.ServiceParameters.CSCLayers = cms.untracked.bool(False)
 process.AlignmentTrackRecoQC8.ServiceParameters.RPCLayers = cms.bool(False)
@@ -212,17 +231,21 @@ process.AlignmentQC8 = cms.EDProducer('AlignmentQC8',
                                       minClusterSize = cms.double(runConfig.minClusterSize),
                                       maxResidual = cms.double(runConfig.maxResidual),
                                       isMC = cms.bool(False),
+                                      shiftX = cms.vdouble(shiftX),
+                                      rotationZ = cms.vdouble(rotationZ),
+                                      trueDx = cms.vdouble(trueDx),
+                                      trueRz = cms.vdouble(trueRz),
                                       SuperChamberType = cms.vstring(SuperChType),
                                       SuperChamberSeedingLayers = cms.vdouble(SuperChSeedingLayers),
                                       MuonSmootherParameters = cms.PSet(PropagatorAlong = cms.string('SteppingHelixPropagatorAny'),
-																																				PropagatorOpposite = cms.string('SteppingHelixPropagatorAny'),
-																																				RescalingFactor = cms.double(5.0)
-																																				)
-																			)
+                                                                        PropagatorOpposite = cms.string('SteppingHelixPropagatorAny'),
+                                                                        RescalingFactor = cms.double(5.0)
+                                                                        )
+                                      )
 
 process.TFileService = cms.Service("TFileService",
                                    fileName = cms.string('alignment_'+strOutput)
-																	 )
+                                   )
 
 # Path and EndPath definitions
 process.rawTOhits_step = cms.Path(process.muonGEMDigis+process.gemRecHits)
@@ -235,7 +258,7 @@ process.schedule = cms.Schedule(process.rawTOhits_step,
                                 process.reconstruction_step,
                                 process.alignment_step,
                                 process.endjob_step
-																)
+                        )
 
 # enable validation event filtering
 process.rawTOhits_step.remove(process.validationEventFilter)

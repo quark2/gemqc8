@@ -53,19 +53,19 @@ print(colType)
 SuperChSeedingLayers = []
 
 for i in range (0,30):
-  SuperChSeedingLayers.append(0)
+    SuperChSeedingLayers.append(0)
 
 for j in range (0,3):
-  for i in range (5*j,5*(j+1)):
-    if (SuperChType[i]!='0'):
-      SuperChSeedingLayers[i*2]=1
-      SuperChSeedingLayers[i*2+1]=3
-      break
-  for i in range (5*(j+1)-1,5*j-1,-1):
-    if (SuperChType[i]!='0'):
-      SuperChSeedingLayers[i*2]=4
-      SuperChSeedingLayers[i*2+1]=2
-      break
+    for i in range (5*j,5*(j+1)):
+        if (SuperChType[i]!='0'):
+            SuperChSeedingLayers[i*2]=1
+            SuperChSeedingLayers[i*2+1]=3
+            break
+    for i in range (5*(j+1)-1,5*j-1,-1):
+        if (SuperChType[i]!='0'):
+            SuperChSeedingLayers[i*2]=4
+            SuperChSeedingLayers[i*2+1]=2
+            break
 
 print(SuperChSeedingLayers)
 
@@ -94,30 +94,28 @@ for i in xrange(len(SuperChType)):
     if SuperChType[i]=='S' : size = 'S'
     if SuperChType[i]!='0' :
         geomFile = 'Analysis/GEMQC8/data/GeometryFiles/gem11'+size+column_row+'.xml'
-		print(geomFile)
-		process.XMLIdealGeometryESSource.geomXMLFiles.append(geomFile)
-		print('-> Appended')
+        print(geomFile)
+        process.XMLIdealGeometryESSource.geomXMLFiles.append(geomFile)
+        print('-> Appended')
 
 # Config importation & settings
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(options.eventsPerJob))
 
 fpath =  "/eos/cms/store/group/dpg_gem/comm_gem/QC8_Commissioning/run"
 for i in range(6-len(str(run_number))):
-  fpath = fpath + '0'
+    fpath = fpath + '0'
 fpath = fpath + str(run_number) + "/"
 
 # Input source
-process.source = cms.Source(
-                            "GEMLocalModeDataSource",
+process.source = cms.Source("GEMLocalModeDataSource",
                             fileNames = cms.untracked.vstring ([fpath+x for x in os.listdir(fpath) if x.endswith(".dat")]),
                             skipEvents=cms.untracked.uint32(0),
                             fedId = cms.untracked.int32(888),  # which fedID to assign
                             hasFerolHeader = cms.untracked.bool(False),
-                            runNumber = cms.untracked.int32(run_number),
+                            runNumber = cms.untracked.int32(run_number)
                             )
 
-process.options = cms.untracked.PSet(
-                                     SkipEvent = cms.untracked.vstring('ProductNotFound')
+process.options = cms.untracked.PSet(SkipEvent = cms.untracked.vstring('ProductNotFound')
                                      )
 
 ############## DB file #################
@@ -130,8 +128,7 @@ CondDB.connect = cms.string('sqlite_fip:Analysis/GEMQC8/data/EMapFiles/'+eMapFil
 
 process.GEMCabling = cms.ESSource("PoolDBESSource",
                                   CondDB,
-                                  toGet = cms.VPSet(cms.PSet(
-                                                             record = cms.string('GEMeMapRcd'),
+                                  toGet = cms.VPSet(cms.PSet(record = cms.string('GEMeMapRcd'),
                                                              tag = cms.string('GEMeMap_v6')
                                                              )
                                                     )
