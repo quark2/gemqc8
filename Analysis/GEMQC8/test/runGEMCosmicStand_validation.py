@@ -232,12 +232,27 @@ process.TFileService = cms.Service("TFileService",
                                    fileName = cms.string('validation_'+strOutput)
                                    )
 
+process.load("DQM.Integration.config.environment_cfi")
+process.dqmEnv.subSystemFolder = "GEM"
+process.dqmEnv.eventInfoFolder = "EventInfo"
+process.dqmSaver.path = ""
+process.dqmSaver.tag = "GEM"
+
+#process.dqmSaver.saveAtJobEnd =cms.untracked.bool(True)
+#process.dqmSaver.forceRunNumber = cms.untracked.int32(run_number)
+
+process.load("DQM.GEM.GEMDQM_cff")
+
+process.GEMDQMSource.recHitsInputLabel = cms.InputTag("gemRecHits")
+
 # Path and EndPath definitions
 process.rawTOhits_step = cms.Path(process.muonGEMDigis+process.gemRecHits)
 process.reconstruction_step = cms.Path(process.GEMCosmicMuonForQC8)
-process.validation_step = cms.Path(process.ValidationQC8)
+process.validation_step = cms.Path(process.ValidationQC8+process.GEMDQM)
 process.endjob_step = cms.EndPath(process.endOfProcess)
-process.output_step = cms.EndPath(process.output)
+process.output_step = cms.EndPath(process.output+process.dqmEnv+process.dqmSaver)
+
+process.MEtoEDMConverter.deleteAfterCopy = cms.untracked.bool(False)
 
 # Schedule definition
 process.schedule = cms.Schedule(process.rawTOhits_step,
