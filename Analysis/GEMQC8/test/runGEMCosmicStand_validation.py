@@ -16,6 +16,7 @@ import FWCore.ParameterSet.VarParsing as VarParsing
 options = VarParsing.VarParsing('analysis')
 
 run_number = runConfig.RunNumber
+run_number += 20000
 
 options.register("runNum",run_number,
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -106,6 +107,9 @@ for i in range(6-len(str(run_number))):
     fpath = fpath + '0'
 fpath = fpath + str(run_number) + "/"
 
+#strSrcFile = "run000090_Cosmic_CERNQC8_2019-04-29_chunk_72.dat"
+strSrcFile = "run000101_Cosmic_CERNQC8_2019-05-07_chunk_75.dat"
+run_number = int(strSrcFile.split("_")[ 0 ].replace("run", "")) + 20000
 # Input source
 process.source = cms.Source("GEMLocalModeDataSource",
                             fileNames = cms.untracked.vstring ([fpath+x for x in os.listdir(fpath) if x.endswith(".dat")]),
@@ -114,7 +118,7 @@ process.source = cms.Source("GEMLocalModeDataSource",
                             hasFerolHeader = cms.untracked.bool(False),
                             runNumber = cms.untracked.int32(run_number),
                             )
-
+process.source.fileNames = cms.untracked.vstring (["file:" + strSrcFile])
 process.options = cms.untracked.PSet(SkipEvent = cms.untracked.vstring('ProductNotFound')
                                      )
 
@@ -129,13 +133,14 @@ CondDB.connect = cms.string('sqlite_fip:Analysis/GEMQC8/data/EMapFiles/'+eMapFil
 process.GEMCabling = cms.ESSource("PoolDBESSource",
                                   CondDB,
                                   toGet = cms.VPSet(cms.PSet(record = cms.string('GEMeMapRcd'),
+																														 #tag = cms.string('GEMeMap_v3')
                                                              tag = cms.string('GEMeMap_v6')
                                                              )
                                                     )
                                   )
 ####################################
 
-process.MessageLogger.cerr.FwkReport.reportEvery = 1000
+#process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 # validation event filter
 process.load('EventFilter.L1TRawToDigi.validationEventFilter_cfi')
 
