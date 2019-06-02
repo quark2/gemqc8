@@ -4,11 +4,11 @@ import os, sys, io
 
 def geomMaker(run_number, AlignOption):
 
-	runPath = os.path.abspath("geometry_files_creator.py").split('QC8Test')[0] + 'QC8Test/src/Analysis/GEMQC8/test/'
+	runPath = os.path.join(os.environ[ "CMSSW_BASE" ], "src/Analysis/GEMQC8/test/")
 	sys.path.insert(0,runPath)
 
-	geom_path = os.path.abspath("geometry_files_creator.py").split('QC8Test')[0] + 'QC8Test/src/Analysis/GEMQC8/data/GeometryFiles/'
-	alignmentTablesPath = os.path.abspath("geometry_files_creator.py").split('QC8Test')[0] + 'QC8Test/src/Analysis/GEMQC8/data/StandAligmentTables/'
+        geom_path = os.path.join(os.environ[ "CMSSW_BASE" ], "src/Analysis/GEMQC8/data/GeometryFiles/")
+        alignmentTablesPath = os.path.join(os.environ[ "CMSSW_BASE" ], "src/Analysis/GEMQC8/data/StandAligmentTables/")
 
 	import configureRun_cfi as runConfig
 

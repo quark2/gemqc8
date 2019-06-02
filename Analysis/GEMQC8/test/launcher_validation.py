@@ -12,13 +12,14 @@ if __name__ == '__main__':
     userDB_add = sys.argv[3]
 
     # Different paths definition
-    srcPath = os.path.abspath("launcher_validation.py").split('QC8Test')[0]+'QC8Test/src/'
-    pyhtonModulesPath = os.path.abspath("launcher_validation.py").split('QC8Test')[0]+'QC8Test/src/Analysis/GEMQC8/python/'
-    runPath = os.path.abspath("launcher_validation.py").split('QC8Test')[0] + 'QC8Test/src/Analysis/GEMQC8/test/'
-    configTablesPath = os.path.abspath("launcher_validation.py").split('QC8Test')[0] + 'QC8Test/src/Analysis/GEMQC8/data/StandConfigurationTables/'
-    alignmentTablesPath = os.path.abspath("launcher_validation.py").split('QC8Test')[0] + 'QC8Test/src/Analysis/GEMQC8/data/StandAligmentTables/'
-    resDirPath = os.path.abspath("launcher_validation.py").split('QC8Test')[0]
+    srcPath = os.path.join(os.environ[ "CMSSW_BASE" ], "src")
+    pyhtonModulesPath = os.path.join(srcPath, "Analysis/GEMQC8/python/")
+    runPath = os.path.join(srcPath, "Analysis/GEMQC8/test/")
+    configTablesPath = os.path.join(srcPath, "Analysis/GEMQC8/data/StandConfigurationTables/")
+    alignmentTablesPath = os.path.join(srcPath, "Analysis/GEMQC8/data/StandAligmentTables/")
+    resDirPath = os.path.join(os.environ[ "CMSSW_BASE" ], "../")
 
+    print(pyhtonModulesPath)
     sys.path.insert(0,pyhtonModulesPath)
 
     import config_creator
@@ -84,7 +85,8 @@ if __name__ == '__main__':
     # Create folders for ouput plots per chamber
     import configureRun_cfi as runConfig
     SuperChType = runConfig.StandConfiguration
-    effoutDir = os.path.abspath("launcher_validation.py").split('QC8Test')[0] + outDirName
+    #effoutDir = os.path.abspath("launcher_validation.py").split('QC8Test')[0] + outDirName
+    effoutDir = resDirPath + outDirName
     for i in range (0,30):
         if (SuperChType[int(i/2)] != '0'):
             plotsDirCommand = "mkdir outPlots_Chamber_Pos_" + str(i)
