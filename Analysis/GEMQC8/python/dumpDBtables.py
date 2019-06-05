@@ -1,92 +1,42 @@
 import cx_Oracle
-import datetime
-import sys
+import os, sys, io
 
-def printRow(r,fout):
-   for i in r:
-      fout.write(" ")
-      #print type(i)
-      if type(i) is str:
-         fout.write(i)
-      elif type(i) is int:
-         fout.write("{0}".format(i))
-      elif type(i) is float:
-         fout.write("{0:0.5f}".format(i))
-      else:
-         print type(i)
-         fout.write("{0}".format(type(i)))
-   fout.write("\n")
-# end of printRow
+def getConfigurationTable(run_num):
+    print "Downloading StandConfigurationTable for run {0}".format(run_num)
 
+    db = cx_Oracle.connect('GEM_904_COND/904CondDB@INT2R')
+	cur = db.cursor()
 
-def dumpTable(db,tableName,fout,runnumber):
-   query = "select * from {0}".format(tableName)
-   #print "{0}".format(type(runnumber))
-   if (runnumber!='-1'):
-      query+=" where run_number={0}".format(runnumber)
+    query = "select * from CMS_GEM_MUON_VIEW.QC8_GEM_STAND_GEOMETRY_VIEW_RH where RUN_NUMBER="+run_num
+    cur.execute(query)
 
-   print query
-   cur=db.cursor()
-   cur.execute(query)
-   count=0
-   for r in cur:
-      print r
-      printRow(r,fout)
-      count+=1
+    configTablesPath = os.path.abspath("config_creator.py").split('QC8Test')[0] + 'QC8Test/src/Analysis/GEMQC8/data/StandConfigurationTables/'
+    outfile_name = configTablesPath + 'gem11' + str(runConfig.StandConfiguration[i]) + '_c' + str(column) + '_r' + str(row) + '.xml'
 
-   fout.write(" got {0} rows".format(count))
-   print " got {0} rows".format(count)
+    with open(outfile_name,"w+") as outfile:
+        line = "CH_SERIAL_NUMBER,GEM_NUM,POSITION,CH_TYPE,FLIP,AMC,OH,FLOW_METER,RUN_NUMBER"
+        outfile.write(line)
+        for result in cur:
+            chamber_name = result[0]
+            gem_num      = result[1]
+            position     = result[2]
+            ch_type      = result[3]
+            flip         = result[4]
+            amc          = result[5]
+            oh           = result[6]
+            flow_meter   = result[7]
+            run_number   = result[8]
+            line = chamber_name + "," + gem_num + "," + position + "," + ch_type + "," + flip + "," + amc + "," + oh + "," + flow_meter + "," + run_number
+            outfile.write(line)
 
-   # print column names
-   names = [description[0] for description in cur.description]
-   print names
-   printRow(names,fout)
-# end of dumpTable
-
-
-#
-# Main code
-#
-
-if len(sys.argv)==1:
-   print "\nplease provide the runNumber"
-   print "  python dumpViewsQC8.py runNumber"
-   print "If runNumber=-1, the script selects all entries\n"
-   exit()
-
-runnumber=sys.argv[1]
-print "runnumber={0}".format(runnumber)
-
-f = open("test-qc8-dump-{0}.out".format(runnumber),'w')
-
-db = cx_Oracle.connect('CMS_GEM_APPUSER_R/GEM_Reader_2015@INT2R')
-#db = cx_Oracle.connect('CMS_GEM_APPUSER_R/GEM_Reader_2015@cms_omds_lb')
-
-dumpTable(db,"CMS_GEM_MUON_VIEW.QC8_GEM_STAND_GEOMETRY_VIEW_RH",f,runnumber)
-f.write("\n\n");
-dumpTable(db,"CMS_GEM_MUON_VIEW.QC8_GEM_ALIGNMENT_VIEW_RH",f,runnumber)
-f.write("\n\n");
-dumpTable(db,"CMS_GEM_MUON_VIEW.QC8_GEM_CH_VFAT_EFF_VIEW_RH",f,runnumber)
-f.write("\n");
-f.write("{0}".format(datetime.datetime.now()))
-f.close();
-
-exit()
-
-query = "select * from CMS_GEM_MUON_VIEW.QC8_GEM_STAND_GEOMETRY_VIEW_RH"
-print query
-
-cur=db.cursor()
-cur.execute(query)
-for r in cur:
-   print r
-   printRow(r,f)
-
-# print column names
-names = [description[0] for description in cur.description]
-print names
-printRow(names,f)
-#for n in names:
-#   f.write(" {0}".format(n))
-
-f.close()
+if __name__ == '__main__':
+    runNumber = sys.argv[1]
+    tableType = sys.argv[2]
+    if tableType == "ConfigurationTable":
+        getConfigurationTable(runNumber)
+    if tableType == "AligmentTable":
+        getAlignmentTable(runNumber)
+    if tableType == "DeadStripsTable":
+        getDeadStripsTable(runNumber)
+    if tableType == "HotStripsTable":
+        getHotStripsTable(runNumber)
