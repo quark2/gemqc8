@@ -22,10 +22,10 @@ options.register("runNum",run_number,
                  VarParsing.VarParsing.varType.int,
                  "Run number")
 
-options.register("inputFile","",
+options.register("inputPath","",
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
-                 "input raw file")
+                 "Path of input raw file(s)")
 
 options.register("eventsPerJob",-1,
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -106,25 +106,19 @@ for i in xrange(len(SuperChType)):
 # Config importation & settings
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(options.eventsPerJob))
 
-fpath =  "/eos/cms/store/group/dpg_gem/comm_gem/QC8_Commissioning/run"
-for i in range(6-len(str(run_number))):
-    fpath = fpath + '0'
-fpath = fpath + str(run_number) + "/"
+run_number = options.runNum
+fpath = "/eos/cms/store/group/dpg_gem/comm_gem/QC8_Commissioning/run%06i"%(run_number)
+if options.inputPath != "": fpath = options.inputPath
 
-#strSrcFile = "run000090_Cosmic_CERNQC8_2019-04-29_chunk_72.dat"
-strSrcFile = "run000134_Cosmic_CERNQC8_2019-05-31_chunk_0.dat" if options.inputFile == "" else options.inputFile
-run_number = int(strSrcFile.split("_")[ 0 ].replace("run", "")) + 20000
-strDirRun = "raw_run000134"
 # Input source
 process.source = cms.Source("GEMLocalModeDataSource",
-                            #fileNames = cms.untracked.vstring ([fpath+x for x in os.listdir(fpath) if x.endswith(".dat")]),
+                            fileNames = cms.untracked.vstring (["file:" + os.path.join(fpath, x) for x in os.listdir(fpath) if x.endswith(".dat")]),
                             skipEvents=cms.untracked.uint32(0),
                             fedId = cms.untracked.int32(888),  # which fedID to assign
                             hasFerolHeader = cms.untracked.bool(False),
-                            runNumber = cms.untracked.int32(run_number),
+                            runNumber = cms.untracked.int32(run_number + 20000),
                             )
-#process.source.fileNames = cms.untracked.vstring(["file:" + strSrcFile])
-process.source.fileNames = cms.untracked.vstring([ "file:" + os.path.join(strDirRun, s) for s in os.listdir(strDirRun) if s.endswith(".dat") ])
+
 process.options = cms.untracked.PSet(SkipEvent = cms.untracked.vstring('ProductNotFound')
                                      )
 

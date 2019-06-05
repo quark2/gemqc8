@@ -5,7 +5,7 @@ def getConfigurationTable(run_num):
     print "Downloading StandConfigurationTable for run {0}".format(run_num)
 
     db = cx_Oracle.connect('GEM_904_COND/904CondDB@INT2R')
-	cur = db.cursor()
+    cur = db.cursor()
 
     query = "select * from CMS_GEM_MUON_VIEW.QC8_GEM_STAND_GEOMETRY_VIEW_RH where RUN_NUMBER="+run_num
     cur.execute(query)
