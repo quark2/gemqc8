@@ -16,12 +16,16 @@ import FWCore.ParameterSet.VarParsing as VarParsing
 options = VarParsing.VarParsing('analysis')
 
 run_number = runConfig.RunNumber
-run_number += 20000
 
 options.register("runNum",run_number,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  "Run number")
+
+options.register("inputFile","",
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 "input raw file")
 
 options.register("eventsPerJob",-1,
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -108,17 +112,19 @@ for i in range(6-len(str(run_number))):
 fpath = fpath + str(run_number) + "/"
 
 #strSrcFile = "run000090_Cosmic_CERNQC8_2019-04-29_chunk_72.dat"
-strSrcFile = "run000101_Cosmic_CERNQC8_2019-05-07_chunk_75.dat"
+strSrcFile = "run000134_Cosmic_CERNQC8_2019-05-31_chunk_0.dat" if options.inputFile == "" else options.inputFile
 run_number = int(strSrcFile.split("_")[ 0 ].replace("run", "")) + 20000
+strDirRun = "raw_run000134"
 # Input source
 process.source = cms.Source("GEMLocalModeDataSource",
-                            fileNames = cms.untracked.vstring ([fpath+x for x in os.listdir(fpath) if x.endswith(".dat")]),
+                            #fileNames = cms.untracked.vstring ([fpath+x for x in os.listdir(fpath) if x.endswith(".dat")]),
                             skipEvents=cms.untracked.uint32(0),
                             fedId = cms.untracked.int32(888),  # which fedID to assign
                             hasFerolHeader = cms.untracked.bool(False),
                             runNumber = cms.untracked.int32(run_number),
                             )
-process.source.fileNames = cms.untracked.vstring (["file:" + strSrcFile])
+#process.source.fileNames = cms.untracked.vstring(["file:" + strSrcFile])
+process.source.fileNames = cms.untracked.vstring([ "file:" + os.path.join(strDirRun, s) for s in os.listdir(strDirRun) if s.endswith(".dat") ])
 process.options = cms.untracked.PSet(SkipEvent = cms.untracked.vstring('ProductNotFound')
                                      )
 

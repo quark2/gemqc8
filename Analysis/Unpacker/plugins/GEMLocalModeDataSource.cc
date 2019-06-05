@@ -91,7 +91,7 @@ m_goodEvents()
 		throw cms::Exception(ss.str());
 	}
 	
-	m_runnumber = m_fileindex; // dummy run number
+	//m_runnumber = m_fileindex; // dummy run number
 }
 
 
