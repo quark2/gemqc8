@@ -153,6 +153,7 @@ void macro_hot_dead_strips(int run, string configDir)
     digisPerStripPerCh[c]->Draw();
 
     TF1 *GaussFit = new TF1("GaussFit","gaus",1,max_digi_occupancy[c]);
+    digisPerStripPerCh[c]->Fit(GaussFit,"NOQ");
     digisPerStripPerCh[c]->Fit(GaussFit,"Q");
     GaussFit->Draw("SAME");
 
@@ -247,7 +248,6 @@ void macro_hot_dead_strips(int run, string configDir)
     digi2D[c]->SetTitle(namename.c_str());
     digi2D[c]->GetXaxis()->SetTitle("Strip Number");
     digi2D[c]->GetYaxis()->SetTitle("ieta");
-    Canvas->SetLogz();
     digi2D[c]->Draw("colz");
     digi2D[c]->Write(namename.c_str());
     namename = "outPlots_Chamber_Pos_" + to_string(chamberPos[i]) + "/Digi_Ch_Pos_" + to_string(chamberPos[i]) + ".png";

@@ -165,6 +165,11 @@ process.muonGEMDigis.InputLabel = cms.InputTag("source","gemLocalModeDataSource"
 process.muonGEMDigis.useDBEMap = True
 process.muonGEMDigis.unPackStatusDigis = True
 
+# Getting hot and dead strips files
+HotDeadStripsTablesPath = os.path.abspath("runGEMCosmicStand_validation.py").split('QC8Test')[0]+'QC8Test/src/Analysis/GEMQC8/data/'
+hotStripsFile = HotDeadStripsTablesPath + "HotStripsTables/Mask_HotStrips_run" + run_number + ".dat"
+deadStripsFile = HotDeadStripsTablesPath + "DeadStripsTables/Mask_DeadStrips_run" + run_number + ".dat"
+
 # digi to reco
 process.load('RecoLocalMuon.GEMRecHit.gemRecHits_cfi')
 
@@ -172,6 +177,11 @@ process.gemRecHits = cms.EDProducer("GEMRecHitProducer",
                                     recAlgoConfig = cms.PSet(),
                                     recAlgo = cms.string('GEMRecHitStandardAlgo'),
                                     gemDigiLabel = cms.InputTag("muonGEMDigis"),
+                                    maskSource = cms.string(hotStripsFile),
+                                    #maskvecfile = cms.FileInPath('RecoLocalMuon/GEMRecHit/data/GEMMaskVec.dat'),
+                                    deadSource = cms.string(deadStripsFile),
+                                    #deadvecfile = cms.FileInPath('RecoLocalMuon/GEMRecHit/data/GEMDeadVec.dat'),
+                                    applyMasking = cms.bool(True)
                                     )
 
 # Reconstruction of muon track
@@ -199,7 +209,7 @@ process.GEMCosmicMuonForQC8.ServiceParameters.CSCLayers = cms.untracked.bool(Fal
 process.GEMCosmicMuonForQC8.ServiceParameters.RPCLayers = cms.bool(False)
 
 # Fast Efficiency - Get certified events from file
-pyhtonModulesPath = os.path.abspath("runGEMCosmicStand_fast_efficiency.py").split('QC8Test')[0]+'QC8Test/src/Analysis/GEMQC8/python/'
+pyhtonModulesPath = os.path.abspath("runGEMCosmicStand_validation.py").split('QC8Test')[0]+'QC8Test/src/Analysis/GEMQC8/python/'
 sys.path.insert(1,pyhtonModulesPath)
 from readCertEvtsFromFile import GetCertifiedEvents
 certEvts = GetCertifiedEvents(run_number)
