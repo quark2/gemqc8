@@ -166,9 +166,8 @@ process.muonGEMDigis.useDBEMap = True
 process.muonGEMDigis.unPackStatusDigis = True
 
 # Getting hot and dead strips files
-HotDeadStripsTablesPath = os.path.abspath("runGEMCosmicStand_validation.py").split('QC8Test')[0]+'QC8Test/src/Analysis/GEMQC8/data/'
-hotStripsFile = HotDeadStripsTablesPath + "HotStripsTables/Mask_HotStrips_run" + run_number + ".dat"
-deadStripsFile = HotDeadStripsTablesPath + "DeadStripsTables/Mask_DeadStrips_run" + run_number + ".dat"
+hotStripsFile = "Analysis/GEMQC8/data/HotStripsTables/Mask_HotStrips_run" + str(run_number) + ".dat"
+deadStripsFile = "Analysis/GEMQC8/data/DeadStripsTables/Mask_DeadStrips_run" + str(run_number) + ".dat"
 
 # digi to reco
 process.load('RecoLocalMuon.GEMRecHit.gemRecHits_cfi')
@@ -177,10 +176,8 @@ process.gemRecHits = cms.EDProducer("GEMRecHitProducer",
                                     recAlgoConfig = cms.PSet(),
                                     recAlgo = cms.string('GEMRecHitStandardAlgo'),
                                     gemDigiLabel = cms.InputTag("muonGEMDigis"),
-                                    maskSource = cms.string(hotStripsFile),
-                                    #maskvecfile = cms.FileInPath('RecoLocalMuon/GEMRecHit/data/GEMMaskVec.dat'),
-                                    deadSource = cms.string(deadStripsFile),
-                                    #deadvecfile = cms.FileInPath('RecoLocalMuon/GEMRecHit/data/GEMDeadVec.dat'),
+                                    maskFile = cms.FileInPath(hotStripsFile),
+                                    deadFile = cms.FileInPath(deadStripsFile),
                                     applyMasking = cms.bool(True)
                                     )
 
