@@ -183,8 +183,11 @@ void macro_fast_efficiency(int run, string configDir)
 		{
 			pos = line.find(comma);
 			split = line.substr(0, pos);
-			if (split == "RunNumber" || split == "ChamberName") continue;
+			if (split == "CH_SERIAL_NUMBER") continue;
 			chamberName.push_back(split);
+			line.erase(0, pos + comma.length());
+
+			pos = line.find(comma);
 			line.erase(0, pos + comma.length());
 
 			pos = line.find(slash);

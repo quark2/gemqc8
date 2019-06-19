@@ -13,8 +13,8 @@ def configMaker(run_number):
 		for line in infile:
 			line = line.split('\n')[0]
 			SCtype = line.split(',')[0]
-			if (SCtype=='RunNumber'):
-				if (line.split(',')[1]!=run_number):
+			if (SCtype!='CH_SERIAL_NUMBER'):
+				if (line.split(',')[8]!=run_number):
 					sys.exit('StandGeometryConfiguration file has something wrong: run rumber not matching...')
 
 	out_name = 'out_run_'
@@ -49,8 +49,8 @@ def configMaker(run_number):
 		for line in infile:
 			line = line.split('\n')[0]
 			SCtype = line.split(',')[0]
-			if (SCtype!='RunNumber' and SCtype!='ChamberName'):
-				position = line.split(',')[1]
+			if (SCtype!='CH_SERIAL_NUMBER'):
+				position = line.split(',')[2]
 				row = int(position.split('/')[0])
 				column = int(position.split('/')[1])
 				SCnumber = (5 * (column - 1)) + (row - 1)

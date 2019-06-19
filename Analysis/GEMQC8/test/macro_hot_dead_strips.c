@@ -94,40 +94,48 @@ void macro_hot_dead_strips(int run, string configDir)
 
   // Open stand configuration file for present run & get names + positions of chambers
 
-  ifstream standConfigFile;
-  string configName = configDir + "StandGeometryConfiguration_run" + to_string(run) + ".csv";
-  standConfigFile.open(configName);
-  string line, split, comma = ",", slash = "/";
-  vector<string> chamberName;
-  int ChPos = 0;
-  vector<int> chamberPos;
-  size_t pos = 0;
-  while (getline(standConfigFile, line))
-  {
-    pos = line.find(comma);
-    split = line.substr(0, pos);
-    if (split == "RunNumber" || split == "ChamberName") continue;
-    chamberName.push_back(split);
-    line.erase(0, pos + comma.length());
+	string configName = configDir + "StandGeometryConfiguration_run" + to_string(run) + ".csv";
+	ifstream standConfigFile (configName);
 
-    pos = line.find(slash);
-    split = line.substr(0, pos);
-    ChPos = (stoi(split)-1)*2; // (Row-1)*2
-    line.erase(0, pos + slash.length());
+	string line, split, comma = ",", slash = "/";
+	vector<string> chamberName;
+	int ChPos = 0;
+	vector<int> chamberPos;
+	size_t pos = 0;
 
-    pos = line.find(slash);
-    split = line.substr(0, pos);
-    ChPos += (stoi(split)-1)*10; // (Row-1)*2 + (Col-1)*10
-    line.erase(0, pos + slash.length());
+	if (standConfigFile.is_open())
+	{
+		while (getline(standConfigFile, line))
+		{
+			pos = line.find(comma);
+			split = line.substr(0, pos);
+			if (split == "CH_SERIAL_NUMBER") continue;
+			chamberName.push_back(split);
+			line.erase(0, pos + comma.length());
 
-    pos = line.find(comma);
-    split = line.substr(0, pos);
-    if (split == "B") ChPos += 0; // (Row-1)*2 + (Col-1)*10 + 0
-    if (split == "T") ChPos += 1; // (Row-1)*2 + (Col-1)*10 + 1
-    line.erase(0, pos + comma.length());
+			pos = line.find(comma);
+			line.erase(0, pos + comma.length());
 
-    chamberPos.push_back(ChPos);
-  }
+			pos = line.find(slash);
+			split = line.substr(0, pos);
+			ChPos = (stoi(split)-1)*2; // (Row-1)*2
+			line.erase(0, pos + slash.length());
+
+			pos = line.find(slash);
+			split = line.substr(0, pos);
+			ChPos += (stoi(split)-1)*10; // (Row-1)*2 + (Col-1)*10
+			line.erase(0, pos + slash.length());
+
+			pos = line.find(comma);
+			split = line.substr(0, pos);
+			if (split == "B") ChPos += 0; // (Row-1)*2 + (Col-1)*10 + 0
+			if (split == "T") ChPos += 1; // (Row-1)*2 + (Col-1)*10 + 1
+			line.erase(0, pos + comma.length());
+
+			chamberPos.push_back(ChPos);
+		}
+	}
+	else cout << "Error opening file: " << configName << endl;
 
   // Identification of value for being a dead (0) or hot (above 5 sigmas) strip per chamber
 

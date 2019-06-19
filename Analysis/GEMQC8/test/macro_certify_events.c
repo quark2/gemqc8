@@ -63,7 +63,7 @@ void macro_certify_events(int run, string configDir)
 		}
 	}
 
-	// Open stand configuration file for present run & get names + positions of chambers
+  // Open stand configuration file for present run & get names + positions of chambers
 
 	string configName = configDir + "StandGeometryConfiguration_run" + to_string(run) + ".csv";
 	ifstream standConfigFile (configName);
@@ -80,8 +80,11 @@ void macro_certify_events(int run, string configDir)
 		{
 			pos = line.find(comma);
 			split = line.substr(0, pos);
-			if (split == "RunNumber" || split == "ChamberName") continue;
+			if (split == "CH_SERIAL_NUMBER") continue;
 			chamberName.push_back(split);
+			line.erase(0, pos + comma.length());
+
+			pos = line.find(comma);
 			line.erase(0, pos + comma.length());
 
 			pos = line.find(slash);

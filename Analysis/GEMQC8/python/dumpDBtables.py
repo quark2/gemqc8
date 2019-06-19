@@ -17,12 +17,14 @@ def getConfigurationTable(run_num,userRunInfoDB_add):
     cur.execute(query)
     for result in cur:
         standConfigurationDateTime = result[0]
-        year = standConfigurationDateTime.split('-')[0]
-        month = standConfigurationDateTime[5:].split('-')[0]
-        day = standConfigurationDateTime[8:].split(' ')[0]
-        hour = standConfigurationDateTime[11:].split(':')[0]
-        minutes = standConfigurationDateTime[14:].split(':')[0]
-        seconds = standConfigurationDateTime[17:]
+        date = standConfigurationDateTime.split(' ')[0]
+        year = date.split('-')[0]
+        month = date.split('-')[1]
+        day = date.split('-')[2]
+        time = standConfigurationDateTime.split(' ')[1]
+        hour = time.split(':')[0]
+        minutes = time.split(':')[1]
+        seconds = time.split(':')[2]
         deltaT = (runDateTime - datetime.datetime(int(year),int(month),int(day),int(hour),int(minutes),int(seconds))).total_seconds()
         if (deltaT >= 0 and deltaT < delta_min):
             delta_min = deltaT
