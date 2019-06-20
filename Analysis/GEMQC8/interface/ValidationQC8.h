@@ -92,6 +92,12 @@ private:
   TH1D *residualPhi;
   TH1D *residualEta;
   TH1D *recHitsPerTrack;
+  TH1D *genMuAngX;
+  TH1D *genMuAngY;
+  TH1D *trajMuAngX;
+  TH1D *trajMuAngY;
+  TH1D *deltaMuAngX;
+  TH1D *deltaMuAngY;
 
   TTree *tree;
   int run;
@@ -118,6 +124,21 @@ private:
   float confTestHitZ[30];
   int nTrajHit; // number of trajHits
   int nTrajRecHit; // number of confirmed trajHits
+  float trajAngX;
+  float trajAngY;
+
+  TTree *genTree;
+  float genMuPx;
+  float genMuPy;
+  float genMuPz;
+  float genMuPt;
+  float genMuTheta;
+  float genMuPhi;
+  float genMuX;
+  float genMuY;
+  float genMuZ;
+  float genAngX;
+  float genAngY;
 };
 
 #endif

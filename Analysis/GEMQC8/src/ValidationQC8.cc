@@ -1,8 +1,7 @@
 #include "Analysis/GEMQC8/interface/ValidationQC8.h"
-
 #include <iomanip>
-
 #include <TCanvas.h>
+#include <TMath.h>
 
 using namespace std;
 using namespace edm;
@@ -50,6 +49,16 @@ ValidationQC8::ValidationQC8(const edm::ParameterSet& cfg): GEMBaseValidation(cf
   residualPhi = fs->make<TH1D>("residualPhi","residualPhi",400,-5,5);
   residualEta = fs->make<TH1D>("residualEta","residualEta",200,-10,10);
   recHitsPerTrack = fs->make<TH1D>("recHitsPerTrack","recHits per reconstructed track",15,0,15);
+  trajMuAngX = fs->make<TH1D>("trajMuAngX","trajAngX (XZ plane)",1000,-1,1);
+  trajMuAngY = fs->make<TH1D>("trajMuAngY","trajAngY (YZ plane)",1000,-0.8,0.8);
+
+
+  if(isMC){
+    genMuAngX = fs->make<TH1D>("genMuAngX","genAngX (XZ plane)",1000,-1,1);
+    genMuAngY = fs->make<TH1D>("genMuAngY","genAngY (YZ plane)",1000,-0.8,0.8);
+    deltaMuAngX = fs->make<TH1D>("deltaMuAngX","trajAngX - genAngX (XZ plane)",1000,-0.1,0.1);
+    deltaMuAngY = fs->make<TH1D>("deltaMuAngY","trajAngY - genAngY (YZ plane)",1000,-0.7,0.7);
+  }
 
   // Tree branches declaration
 
@@ -163,6 +172,23 @@ void ValidationQC8::analyze(const edm::Event& e, const edm::EventSetup& iSetup){
   trajPz = -999.9;
   nTrajHit = 0;
   nTrajRecHit = 0;
+  trajAngX = 999.9;
+  trajAngY = 999.9;
+
+  if (isMC)
+  {
+    genMuPx = -999.9;
+    genMuPy = -999.9;
+    genMuPz = -999.9;
+    genMuPt = -999.9;
+    genMuTheta = -999.9;
+    genMuPhi = -999.9;
+    genMuX = -999.9;
+    genMuY = -999.9;
+    genMuZ = -999.9;
+    genAngX = -999.9;
+    genAngY = -999.9;
+  }
 
   for (int i=0; i<30; i++)
   {
@@ -359,8 +385,43 @@ void ValidationQC8::analyze(const edm::Event& e, const edm::EventSetup& iSetup){
     trajPx = gvecTrack.x();
     trajPy = gvecTrack.y();
     trajPz = gvecTrack.z();
+    trajAngX = atan(trajPx/trajPz);
+    trajAngY = atan(trajPy/trajPz);
 
+    trajMuAngX->Fill(trajAngX);
+    trajMuAngY->Fill(trajAngY);
     recHitsPerTrack->Fill(size(bestTraj.recHits()));
+
+    if (isMC)
+    {
+      HepMC::GenParticle *genMuon = NULL;
+
+      edm::Handle<edm::HepMCProduct> genVtx;
+      e.getByToken( this->InputTagToken_US, genVtx);
+      genMuon = genVtx->GetEvent()->barcode_to_particle(1);
+
+      genMuPx = float(genMuon->momentum().x());
+      genMuPy = float(genMuon->momentum().y());
+      genMuPz = float(genMuon->momentum().z());
+      genMuPt = float(genMuon->momentum().perp());
+      genMuTheta = float(genMuon->momentum().theta());
+      genMuPhi = float(genMuon->momentum().phi());
+      genAngX = atan(genMuPx/genMuPz);
+      genAngY = atan(genMuPy/genMuPz);
+
+      genMuAngX->Fill(genAngX);
+      genMuAngY->Fill(genAngY);
+      deltaMuAngX->Fill(trajAngX-genAngX);
+      deltaMuAngY->Fill(trajAngY-genAngY);
+
+      float dUnitGen = 0.1;
+
+      genMuX = float(dUnitGen * genMuon->production_vertex()->position().x());
+      genMuY = float(dUnitGen * genMuon->production_vertex()->position().y());
+      genMuZ = float(dUnitGen * genMuon->production_vertex()->position().z());
+
+      genTree->Fill();
+    }
 
     // Extrapolation to all the chambers, test chamber selected for efficiency calculation
 
