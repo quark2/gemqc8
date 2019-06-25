@@ -1,9 +1,5 @@
 #include "Analysis/GEMQC8/interface/FastEfficiencyQC8.h"
 
-#include <iomanip>
-
-#include <TCanvas.h>
-
 using namespace std;
 using namespace edm;
 

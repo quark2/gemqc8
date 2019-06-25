@@ -48,6 +48,9 @@
 
 #include "RecoMuon/CosmicMuonProducer/interface/HeaderForQC8.h"
 
+#include <iomanip>
+
+#include <TCanvas.h>
 #include <TFile.h>
 #include <TTree.h>
 

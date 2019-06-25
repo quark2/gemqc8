@@ -49,9 +49,11 @@
 #include "RecoMuon/CosmicMuonProducer/interface/HeaderForQC8.h"
 
 #include <algorithm>
+#include <iomanip>
 
 #include <TFile.h>
 #include <TTree.h>
+#include <TCanvas.h>
 
 class FastEfficiencyQC8 : public GEMBaseValidation
 {

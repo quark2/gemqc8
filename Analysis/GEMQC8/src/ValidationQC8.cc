@@ -1,7 +1,4 @@
 #include "Analysis/GEMQC8/interface/ValidationQC8.h"
-#include <iomanip>
-#include <TCanvas.h>
-#include <TMath.h>
 
 using namespace std;
 using namespace edm;

@@ -48,8 +48,11 @@
 
 #include "RecoMuon/CosmicMuonProducer/interface/HeaderForQC8.h"
 
+#include <iomanip>
+
 #include <TFile.h>
 #include <TTree.h>
+#include <TCanvas.h>
 
 class HotDeadStripsQC8 : public GEMBaseValidation
 {
@@ -59,7 +62,7 @@ public:
   ~HotDeadStripsQC8();
   void bookHistograms(DQMStore::IBooker &, edm::Run const &, edm::EventSetup const &) override;
   void analyze(const edm::Event& e, const edm::EventSetup&) override;
-  const GEMGeometry* initGeometry(edm::EventSetup const & iSetup);  
+  const GEMGeometry* initGeometry(edm::EventSetup const & iSetup);
   const GEMGeometry* GEMGeometry_;
   std::vector<GEMChamber> gemChambers;
   int n_ch;
@@ -67,11 +70,11 @@ public:
   CosmicMuonSmoother* theSmoother;
   KFUpdator* theUpdator;
   edm::EDGetToken InputTagToken_, InputTagToken_DG;
-  
+
 private:
 
   TH3D *digiStrips;
-  
+
   TTree *tree;
   int run;
   int lumi;
