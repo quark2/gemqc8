@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import cx_Oracle
 import ROOT
 import os
@@ -12,12 +14,6 @@ from array import array
 #sta_period = "'2018-07-17 08:00:01'"
 #end_period = "'2018-07-17 14:30:01'"
 
-#to control the status there are data in the period 
-#sta_period = "'2018-12-06 22:00:01'"
-#end_period = "'2019-03-15 08:00:01'"
-
-#test with board 4 channel 2 : 2-2-Top
-
 sta_period = raw_input("Insert UTC start time in format YYYY-MM-DD HH:mm:ss\n")
 type(sta_period)
 end_period = raw_input("Insert UTC end time in format YYYY-MM-DD HH:mm:ss\n")
@@ -26,18 +22,12 @@ type(end_period)
 #to remove ' and space
 start=sta_period.replace(" ", "_")
 end=end_period.replace(" ", "_")
-#start = start[1:-1]
-#end = end[1:-1]
 start=start.replace(":", "-")
 end=end.replace(":", "-")
-#print(start)
-#print(end)
 
 #add ' at beginning and end to have the date in the format for the query
 sta_period = "'" + sta_period + "'"
 end_period = "'" + end_period + "'"
-#print(sta_period)
-#print(end_period)
 
 # I also include some root histogram in case some plot are needed..
 fileName = "QC8_LV_monitor_UTC_start_"+start+"_end_"+end+".root"
@@ -115,7 +105,7 @@ elif firstOne == (len(periodBool) - 1) and lastOne == (len(periodBool)-1):
 	#we don't need the end delimiter
 	sinceDelimiter.append( mappingChangeDate[ len(periodBool)-2 ] )
 #more than one section used starting from the first time region
-#fisrt and others but not the last used
+#first and others but not the last used
 elif firstOne == 0 and lastOne > 0 and lastOne < (len(periodBool)-1):
 	#we need N till and N-1 since
 	for idxSince in range( periodBool.count(1)-1):
@@ -556,7 +546,7 @@ for indexB in range(len(chamberList)): #loop on the selected boards
         print "statusIDToUse", statusIDToUse
 
 
-
+	#USEFUL for DEBUG of IDs
 	#do the query to fill the Histos with I
         #fill current
 	#print "imonNameList ", imonIdList
@@ -1345,19 +1335,4 @@ print("It is organised in directories: to change directory use DIRNAME->cd()")
 print('To draw a TH1 or a TGraph: OBJNAME->Draw()')
 print('To scan the root file use for example:\nLV_StatusTree2_2_Top->Scan("","","colsize=26")')
 print("ALL MONITOR TIMES ARE IN UTC, DCS TIMES ARE IN CET")
-
-#print("mismatch", mismatch)
-#print("mismatch2", mismatch2)
-#print("mismatch3", mismatch3)
-#print("mismatch4", mismatch4)
-#print("mismatch5", mismatch5)
-#print("mismatch6", mismatch6)
-#print("mismatch7", mismatch7)
-#print("mismatch8", mismatch8)
-#print("mismatch9", mismatch9)
-#print("mismatch10", mismatch10)
-#print("mismatch11", mismatch11)
-
-
-
 

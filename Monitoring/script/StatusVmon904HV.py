@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import cx_Oracle
 import ROOT
 import os
@@ -12,34 +14,20 @@ from array import array
 #sta_period = "'2018-07-17 08:00:01'"
 #end_period = "'2018-07-17 14:30:01'"
 
-#to control the status there are data in the period 
-#sta_period = "'2018-12-06 22:00:01'"
-#end_period = "'2019-03-15 08:00:01'"
-
-#test with board 4 channel 2 : 2-2-Top
-
 sta_period = raw_input("Insert UTC start time in format YYYY-MM-DD HH:mm:ss\n")
 type(sta_period)
 end_period = raw_input("Insert UTC end time in format YYYY-MM-DD HH:mm:ss\n")
 type(end_period)
 
-#to remove ' and space
 start=sta_period.replace(" ", "_")
 end=end_period.replace(" ", "_")
-#start = start[1:-1]
-#end = end[1:-1]
 start=start.replace(":", "-")
 end=end.replace(":", "-")
-#print(start)
-#print(end)
 
 #add ' at beginning and end to have the date in the format for the query
 sta_period = "'" + sta_period + "'"
 end_period = "'" + end_period + "'"
-#print(sta_period)
-#print(end_period)
 
-# I also include some root histogram in case some plot are needed..
 fileName = "QC8_HV_monitor_UTC_start_"+start+"_end_"+end+".root"
 f1=ROOT.TFile( fileName,"RECREATE")
 
@@ -106,7 +94,7 @@ tillDelimiter = []
 
 #three cases: 
 #only one period section used
-#fisrt period used
+#first period used
 if firstOne == 0 and lastOne == 0:
 	#we don't need the since delimiter
 	tillDelimiter.append( mappingChangeDate[0] )
@@ -115,7 +103,7 @@ elif firstOne == (len(periodBool) - 1) and lastOne == (len(periodBool)-1):
 	#we don't need the end delimiter
 	sinceDelimiter.append( mappingChangeDate[ len(periodBool)-2 ] )
 #more than one section used starting from the first time region
-#fisrt and others but not the last used
+#first and others but not the last used
 elif firstOne == 0 and lastOne > 0 and lastOne < (len(periodBool)-1):
 	#we need N till and N-1 since
 	for idxSince in range( periodBool.count(1)-1):
@@ -184,10 +172,6 @@ SmonTh1List = []
 SmonMeaningListList = [] #a list of lists (one list for each channel of each board considered)
 			 # each of the inner lists has the meaning of the status
 
-#ImonTgraph1List = []
-#VmonTgraph1List = []
-#SmonTgraph1List = []
-
 ChannelMapList = [ "Top_G3Bot", "Top_G3Top", "Top_G2Bot", "Top_G2Top", "Top_G1Bot", "Top_G1Top", "Top_Drift", "Bot_G3Bot", "Bot_G3Top", "Bot_G2Bot", "Bot_G2Top", "Bot_G1Bot", "Bot_G1Top", "Bot_Drift"]
 
 #MainframeMapList and BoardMapList lists follow the order of ChamberMapList
@@ -220,23 +204,10 @@ for indexB in range(len(chamberList)): #loop on the selected boards
         firstDir.cd()
 	
 	for indexC in range(len(channelList)): #ok for channels from 0 to 6
-		#if indexB < 10:
-       		#	NameB = "board0"+str(indexB) #board in the format board04
-		#elif indexB >= 10:
-       		#	NameB = "board"+str(indexB) #board in the format board04
-	
-		#if indexC < 10:
-       		#	NameC = "channel00"+str(indexC) #channel in format channel002
-		#elif indexC >=10:
-       		#	NameC = "channel0"+str(indexC)
-					
 		#create directories
 		secondDir = firstDir.mkdir("Channel"+channelList[indexC])
 		secondDir.cd()
 		
-		#print("indexB="+str(indexB)+" indexC="+str(indexC)) 
-		#th1List.append(NameB+" "+NameC) 
-
 		#set bin size
 		IMinHV = -10		#uA
 		IMaxHV = 10  		#uA
@@ -278,14 +249,11 @@ for indexB in range(len(chamberList)): #loop on the selected boards
 		SmonTh1List.append(Smonh1)
 
 		SmonMeaningList = []
-#print(ImonTh1List)
-#print("ImonTh1List lenght ="+str(len(ImonTh1List)))
-#print("VmonTh1List lenght ="+str(len(VmonTh1List)))
 
-#now I call channels and boards to fill them one by one
+		#now I call channels and boards to fill them one by one
 
-#for boardN in range(insertedBoards): #ok for boards from 0 to 15
-#	for channelN in range(insertedChannels): #ok for channels from 0 to 13
+		#for boardN in range(insertedBoards): #ok for boards from 0 to 15
+		#for channelN in range(insertedChannels): #ok for channels from 0 to 13
 		
 		#find the number of the board from the name		
 		indexTB = 0
@@ -320,10 +288,6 @@ for indexB in range(len(chamberList)): #loop on the selected boards
 			channel = "channel0"+str(indexTC)
 
 		#indexTB is the posiion in the list when the required chamber is found
-		#print (MainframeMapList[indexTB], " ", BoardMapList[indexTB], " ", channel)
-		#print (board, " ", channel)
-		#len(chamberList)
-		#len(channelList)
 		
 		#print ("counter before query:", counter)
 		
@@ -576,7 +540,7 @@ for indexB in range(len(chamberList)): #loop on the selected boards
                 statusIDToUse = list(dict.fromkeys( statusIDToUse ))
 		print "statusIDToUse", statusIDToUse
 
-		
+		#USEFUL TO DEBUG IDs
 		#print "imonNameList ", imonIdList
 		#print "sinceImonList ", sinceImonList 
 		#print "tillImonList ", tillImonList
@@ -699,7 +663,6 @@ for indexB in range(len(chamberList)): #loop on the selected boards
                 	imonOnlyTDate[refillI]=SortListI[refillI][2]
                                                                                                                 
                 #print(imonOnlyI)
-                #print(imonOnlyI)
 		#print(imonOnlyTDate)
                 
                 #rescale the negative times
@@ -721,30 +684,6 @@ for indexB in range(len(chamberList)): #loop on the selected boards
 			imonOnlyI.append(-1000000000)
 			#continue
 			
-		#put the imonOnlyTDate in the correct root format
-		#for idxDate in range(len(imonOnlyTDate)):
-	#		print imonOnlyTDate[idxDate]
-	#		year = str(imonOnlyTDate[idxDate])[0:4]
-	#		print year
-	#		month = str(imonOnlyTDate[idxDate])[5:7]
-	#		print month
-	#		day = str(imonOnlyTDate[idxDate])[8:10]
-        #                print day
-	#		hour = str(imonOnlyTDate[idxDate])[11:13]
-        #                print hour
-	#		minute = str(imonOnlyTDate[idxDate])[14:16]
-        #                print minute
-	#		second = str(imonOnlyTDate[idxDate])[17:19]
-        #                print second
-	#		micro = str(imonOnlyTDate[idxDate])[20:]
-	#		print micro
-
-			#longString = ROOT.TString( year+"-"+month+"-"+day+" "+hour+":"+minute+":"+second )
-	#		longList =str( year+"-"+month+"-"+day+" "+hour+":"+minute+":"+second )
-		
-	#		da1 = ROOT.TDatime( longList )
-
-	#		imonOnlyTDate[idxDate] = da1.Convert()
 
 
                 negativeStartI = imonOnlyT[0]
@@ -1324,14 +1263,4 @@ print('To draw a TH1 or a TGraph: OBJNAME->Draw()')
 print('To scan the root file use for example:\nHV_StatusTree2_2_Top_G3Bot->Scan("","","colsize=26")')
 print("ALL MONITOR TIMES ARE IN UTC, DCS TIMES ARE IN CET")
 
-#print("mismatch", mismatch)
-#print("mismatch2", mismatch2)
-#print("mismatch3", mismatch3)
-#print("mismatch4", mismatch4)
-#print("mismatch5", mismatch5)
-#print("mismatch6", mismatch6)
-#print("howMany345", howMany345)
-#print("howMany6789", howMany6789)
-#print("howMany10", howMany10)
-#print("howMany11", howMany11)
 
