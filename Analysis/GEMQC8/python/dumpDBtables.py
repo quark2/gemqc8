@@ -113,12 +113,12 @@ def getHotStripsTable(run_num):
     print "\nSuccesfully done!\n"
 
 def getDeadStripsTable(run_num):
-    print "\nDownloading HotStripsTable for run {0}".format(run_num)
+    print "\nDownloading DeadStripsTable for run {0}".format(run_num)
 
     db = cx_Oracle.connect('GEM_904_COND/904CondDB@INT2R')
     cur = db.cursor()
 
-    query = "select * from CMS_GEM_MUON_VIEW.QC8_GEM_MASKED_STRIPS_DEAD_V_RH where RUN_NUMBER="+str(run_num)
+    query = "select * from CMS_GEM_MUON_VIEW.QC8_GEM_MASKED_STRIPS_DEAD_RH where RUN_NUMBER="+str(run_num)
     cur.execute(query)
 
     deadStripsTablesPath = os.path.abspath("dumpDBtables.py").split('QC8Test')[0] + 'QC8Test/src/Analysis/GEMQC8/data/DeadStripsTables/'
