@@ -203,8 +203,8 @@ void AlignmentTrackRecoQC8::produce(edm::Event& ev, const edm::EventSetup& setup
 	      double rdy = rechitLP.y();
 	      double rdz = rechitLP.z();
 
-	      LocalPoint temphitLP(rdx+Dx-Dx2 +Dx_Rz, rdy, rdz);
-
+	      LocalPoint temphitLP(rdx, rdy, rdz);
+	      if(isMC) LocalPoint temphitLP(rdx+Dx-Dx2 +Dx_Rz, rdy, rdz);
 
 	      GEMRecHit temphit(rechit->gemId(), rechit->BunchX(), rechit->firstClusterStrip(), rechit->clusterSize(), temphitLP, rechit->localPositionError());
 	      muRecHits.push_back(MuonTransientTrackingRecHit::specificBuild(geomDet,&temphit));

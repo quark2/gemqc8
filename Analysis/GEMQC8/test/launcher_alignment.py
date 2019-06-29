@@ -10,7 +10,7 @@ def cmsRunner(split):
   running = subprocess.Popen(runCommand.split(),stdout=subprocess.PIPE,universal_newlines=True,cwd=runPath)
   while running.poll() is None:
     line = running.stdout.readline()
-    print(line)
+#    print(line)
   print running.stdout.read()
   running.communicate()
   time.sleep(1)
@@ -18,10 +18,12 @@ def cmsRunner(split):
 def align_stopper(run_number, step):
   runPath = os.path.abspath("geometry_files_creator.py").split('QC8Test')[0] + 'QC8Test/src/Analysis/GEMQC8/test/'
   sys.path.insert(0,runPath)
-  dx,rz = []
+  dx = []
+  rz = []
   alignmentTablesPath = os.path.abspath("align_stopper.py").split('QC8Test')[0] + 'QC8Test/src/Analysis/GEMQC8/data/StandAligmentTables/'
-
-  infileName = alignmentTablesPath + "StandAlignmentValues_run" + run_number + "_step" + str(step) + ".csv"
+  infileName = alignmentTablesPath + "StandAlignmentValues_run" + str(run_number) + "_step" + str(step) + ".csv"
+  stop = 0
+  stop_align = False
   if (os.path.exists(infileName)):
     with open(infileName) as infile:
       for line in infile:
@@ -35,8 +37,16 @@ def align_stopper(run_number, step):
           dx.append(float(line.split(',')[1]))
           rz.append(float(line.split(',')[6]))
 
-  if([dx_ < 0.03 for dx_ in dx] and [rz_ < 0.03 for rz_ in rz]):
-    return True
+  for dx_ in dx:
+    if(dx_ > 0.03):
+      stop +=1
+  for rz_ in rz:
+    if(rz_ > 0.03):
+      stop +=1
+  if(stop < 1):
+    stop_align = True
+  return stop_align
+
 
 if __name__ == '__main__':
 
@@ -80,7 +90,7 @@ if __name__ == '__main__':
 
   stop_align = False
   step = 0
-
+  docheck = False
   import configureRun_cfi as runConfig
   cores = 6
 
@@ -124,14 +134,10 @@ if __name__ == '__main__':
     movingToDir.communicate()
     time.sleep(1)
 
-    mvToDirCommand = "mv " + out_name + " " + resDirPath+outDirName + "/" + out_name
-    movingToDir = subprocess.Popen(mvToDirCommand.split(),stdout=subprocess.PIPE,universal_newlines=True,cwd=runPath)
-    movingToDir.communicate()
-    time.sleep(1)
-
     # Alignment computation & output2
-    alignCommand = "root -l -q " + runPath + "macro_alignment.c(" + str(run_number) + ",\"" + runPath + "\",\"" + configTablesPath + "\"," + str(step) + ")"
+    alignCommand = "root -l -q " + runPath + "macro_alignment.c(" + str(run_number) + ",\"" + runPath + "\",\"" + alignmentTablesPath + "\"," + str(step) + ")"
     alignment = subprocess.Popen(alignCommand.split(),stdout=subprocess.PIPE,universal_newlines=True,cwd=alignoutDir)
+    print line
     while alignment.poll() is None:
       line = alignment.stdout.readline()
       print(line)
@@ -139,22 +145,27 @@ if __name__ == '__main__':
     alignment.communicate()
     time.sleep(1)
 
+    if(docheck):
+      checkCommand = "python " + pyhtonModulesPath + "check.py " + str(run_number) + " " + str(step)
+      check = subprocess.Popen(checkCommand.split(),stdout=subprocess.PIPE,universal_newlines=True,cwd=alignoutDir)
+      print line
+      while check.poll() is None:
+        line = check.stdout.readline()
+        print(line)
+      print check.stdout.read()
+      check.communicate()
+      time.sleep(1)
+
     stop_align = align_stopper(run_number, step)
-    i += 1
+    print stop_align
+    step += 1
 
     # Generate geometry files
-    geometry_files_creator.geomMaker(run_number, "--yesAlignment")
+    geometry_files_creator.geomMaker(run_number, "--forAlignment")
     time.sleep(1)
 
   # Running the CMSSW code for the last step of alignment
-  runCommand = "cmsRun runGEMCosmicStand_alignment.py"
-  running = subprocess.Popen(runCommand.split(),stdout=subprocess.PIPE,universal_newlines=True,cwd=runPath)
-  while running.poll() is None:
-    line = running.stdout.readline()
-    print(line)
-  print running.stdout.read()
-  running.communicate()
-  time.sleep(1)
+  cmsRunner(cores)
 
   #  # Creating folder outside the CMMSW release to put the output files and plots
   outDirName = "Results_QC8_alignment_run_"+run_number
@@ -172,11 +183,11 @@ if __name__ == '__main__':
   # Create folders for ouput plots per chamber
   import configureRun_cfi as runConfig
   SuperChType = runConfig.StandConfiguration
-  tiltitwistoutDir = os.path.abspath("launcher_alignment.py").split('QC8Test')[0] + outDirName
+  tilttwistoutDir = os.path.abspath("launcher_alignment.py").split('QC8Test')[0] + outDirName
   for i in range (0,30):
     if (SuperChType[int(i/2)] != '0'):
       plotsDirCommand = "mkdir outPlots_Chamber_Pos_" + str(i)
-      plotsDirChamber = subprocess.Popen(plotsDirCommand.split(),stdout=subprocess.PIPE,universal_newlines=True,cwd=tiltitwistoutDir)
+      plotsDirChamber = subprocess.Popen(plotsDirCommand.split(),stdout=subprocess.PIPE,universal_newlines=True,cwd=tilttwistoutDir)
       plotsDirChamber.communicate()
   time.sleep(1)
 
@@ -191,13 +202,8 @@ if __name__ == '__main__':
   movingToDir.communicate()
   time.sleep(1)
 
-  mvToDirCommand = "mv " + out_name + " " + resDirPath+outDirName + "/" + out_name
-  movingToDir = subprocess.Popen(mvToDirCommand.split(),stdout=subprocess.PIPE,universal_newlines=True,cwd=runPath)
-  movingToDir.communicate()
-  time.sleep(1)
-
   # Alignment computation & output
-  tilttwistCommand = "root -l -q " + runPath + "macro_tilt_twist.c(" + run_number + ",\"" + runPath + "\",\"" + configTablesPath + "\")"
+  tilttwistCommand = "root -l -q " + runPath + "macro_tilt_twist.c(" + run_number + ",\"" + runPath + "\",\"" + alignmentTablesPath + "\")"
   tilttwist = subprocess.Popen(tilttwistCommand.split(),stdout=subprocess.PIPE,universal_newlines=True,cwd=tilttwistoutDir)
   while tilttwist.poll() is None:
     line = tilttwist.stdout.readline()

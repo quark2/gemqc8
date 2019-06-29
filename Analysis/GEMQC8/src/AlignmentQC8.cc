@@ -237,9 +237,9 @@ void AlignmentQC8::analyze(const edm::Event& e, const edm::EventSetup& iSetup){
   edm::Handle<std::vector<unsigned int>> seedTypes;
   e.getByToken( this->InputTagToken_TT, seedTypes);
 
-  if(trackCollection->size() == 0) return;
-
   if(debug) cout << "Event: " << nev << "Number of tracks: " << trackCollection->size()  << endl;
+
+  if(trackCollection->size() == 0) return;
 
   // Getting the seed of the best track
   std::vector<Trajectory>::const_iterator trackit = trajGCM->begin();
@@ -355,7 +355,7 @@ void AlignmentQC8::analyze(const edm::Event& e, const edm::EventSetup& iSetup){
         double GPdy = hitGP.y();
         double GPdz = hitGP.z();
 
-        hitGP = GlobalPoint(GPdx-Dx+Dx2 -Dx_Rz, GPdy, GPdz);
+	hitGP = GlobalPoint(GPdx-Dx+Dx2 -Dx_Rz, GPdy, GPdz);
 
         if (fabs(hitGP.x() - GlobTrajPos2.x()) > maxRes+0.5) continue;
         if (abs(hitID.roll() - mRoll)>1) continue;
