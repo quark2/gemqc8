@@ -74,6 +74,7 @@ GEMCosmicMuonForQC8::GEMCosmicMuonForQC8(const edm::ParameterSet& ps) : iev(0) {
   MulSigmaOnWindow = ps.getParameter<double>("MulSigmaOnWindow");
   g_SuperChamType = ps.getParameter<vector<string>>("SuperChamberType");
   g_vecChamType = ps.getParameter<vector<double>>("SuperChamberSeedingLayers");
+  TripEventsPerCh = cfg.getParameter<vector<string>>("tripEvents");
   theGEMRecHitToken = consumes<GEMRecHitCollection>(ps.getParameter<edm::InputTag>("gemRecHitLabel"));
   // register what this produces
   edm::ParameterSet serviceParameters = ps.getParameter<edm::ParameterSet>("ServiceParameters");
@@ -146,6 +147,45 @@ void GEMCosmicMuonForQC8::produce(edm::Event& ev, const edm::EventSetup& setup)
 
   int countTC = 0;
 
+  // Get the events when a chamber was tripping
+	string delimiter = "";
+	string line = "";
+	string interval = "";
+	int ch, beginEvt, endEvt;
+	vector<int> beginTripEvt[30];
+	vector<int> endTripEvt[30];
+	for (unsigned int i = 0; i < TripEventsPerCh.size(); i++)
+	{
+		line = TripEventsPerCh[i];
+
+		delimiter = ",";
+		ch = stoi(line.substr(0, line.find(delimiter)));
+		line.erase(0, line.find(delimiter) + delimiter.length());
+
+		int numberOfIntervals = count(line.begin(), line.end(), ',') + 1; // intervals are number of separators + 1
+		for (int badInterv = 0; badInterv < numberOfIntervals; badInterv++)
+		{
+			delimiter = ",";
+			interval = line.substr(0, line.find(delimiter));
+			delimiter = "-";
+			beginEvt = stoi(interval.substr(0, interval.find(delimiter)));
+			interval.erase(0, interval.find(delimiter) + delimiter.length());
+			endEvt = stoi(interval);
+			if (beginEvt < endEvt)
+			{
+				beginTripEvt[ch].push_back(beginEvt);
+				endTripEvt[ch].push_back(endEvt);
+			}
+			if (endEvt < beginEvt)
+			{
+				beginTripEvt[ch].push_back(endEvt);
+				endTripEvt[ch].push_back(beginEvt);
+			}
+			delimiter = ",";
+			line.erase(0, line.find(delimiter) + delimiter.length());
+		}
+	}
+
   for (auto tch : gemChambers)
   {
     countTC++;
@@ -165,30 +205,45 @@ void GEMCosmicMuonForQC8::produce(edm::Event& ev, const edm::EventSetup& setup)
     for (auto ch : gemChambers)
     {
       if (tch == ch) continue;
-      int nHitOnceFilter = 0;
-      for (auto etaPart : ch.etaPartitions())
+
+  		int index = ch.id().chamber() + ch.id().layer() - 2;
+
+      bool validEvent = true;
+      for (unsigned int i = 0; i < beginTripEvt[index].size(); i++)
       {
-        GEMDetId etaPartID = etaPart->id();
-        GEMRecHitCollection::range range = gemRecHits->get(etaPartID);
-
-        for (GEMRecHitCollection::const_iterator rechit = range.first; rechit!=range.second; ++rechit)
+        if (beginTripEvt[index].at(i) <= nev && nev <= endTripEvt[index].at(i))
         {
-          const GeomDet* geomDet(etaPart);
-          if ((*rechit).clusterSize()<minCLS) continue;
-          if ((*rechit).clusterSize()>maxCLS) continue;
-          muRecHits.push_back(MuonTransientTrackingRecHit::specificBuild(geomDet,&*rechit));
+          validEvent = false;
+        }
+      }
 
-          if ( nHitOnceFilter == 0 ) {
-            TCN++;
-            nHitOnceFilter = 1;
-          }
+      if (validEvent)
+      {
+        int nHitOnceFilter = 0;
+        for (auto etaPart : ch.etaPartitions())
+        {
+          GEMDetId etaPartID = etaPart->id();
+          GEMRecHitCollection::range range = gemRecHits->get(etaPartID);
 
-          int nIdxCh  = ch.id().chamber() + ch.id().layer() - 2;
+          for (GEMRecHitCollection::const_iterator rechit = range.first; rechit!=range.second; ++rechit)
+          {
+            const GeomDet* geomDet(etaPart);
+            if ((*rechit).clusterSize()<minCLS) continue;
+            if ((*rechit).clusterSize()>maxCLS) continue;
+            muRecHits.push_back(MuonTransientTrackingRecHit::specificBuild(geomDet,&*rechit));
 
-          if ( g_vecChamType[ nIdxCh ] == nUpType ) {
-            seedupRecHits.push_back(MuonTransientTrackingRecHit::specificBuild(geomDet,&*rechit));
-          } else if ( g_vecChamType[ nIdxCh ] == nDnType ) {
-            seeddnRecHits.push_back(MuonTransientTrackingRecHit::specificBuild(geomDet,&*rechit));
+            if ( nHitOnceFilter == 0 ) {
+              TCN++;
+              nHitOnceFilter = 1;
+            }
+
+            int nIdxCh  = ch.id().chamber() + ch.id().layer() - 2;
+
+            if ( g_vecChamType[ nIdxCh ] == nUpType ) {
+              seedupRecHits.push_back(MuonTransientTrackingRecHit::specificBuild(geomDet,&*rechit));
+            } else if ( g_vecChamType[ nIdxCh ] == nDnType ) {
+              seeddnRecHits.push_back(MuonTransientTrackingRecHit::specificBuild(geomDet,&*rechit));
+            }
           }
         }
       }
