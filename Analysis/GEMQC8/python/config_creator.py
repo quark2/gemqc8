@@ -3,6 +3,15 @@ import os, sys, io
 
 def configMaker(run_number):
 
+	minClusterSize = 1
+	maxClusterSize = 10
+	maxResidual = 5.0
+	trackChi2 = 3
+	trackResX = 0.2
+	trackResY = 0.3697
+	MulSigmaOnWindow = 5
+	minRecHitsPerTrack = 4
+
 	configTablesPath = os.path.abspath("config_creator.py").split('QC8Test')[0] + 'QC8Test/src/Analysis/GEMQC8/data/StandConfigurationTables/'
 
 	runPath = os.path.abspath("config_creator.py").split('QC8Test')[0] + 'QC8Test/src/Analysis/GEMQC8/test/'
@@ -32,13 +41,14 @@ def configMaker(run_number):
 	outfile.write('OutputFileName = \'' + out_name + '\'\n\n')
 
 	outfile.write('# Parameters definition\n')
-	outfile.write('minClusterSize = 1\n')
-	outfile.write('maxClusterSize = 10\n')
-	outfile.write('maxResidual = 5.0 # cm\n')
-	outfile.write('trackChi2 = 3\n')
-	outfile.write('trackResX = 0.2\n')
-	outfile.write('trackResY = 0.3697\n')
-	outfile.write('MulSigmaOnWindow = 5\n\n')
+	outfile.write('minClusterSize = {}\n'.format(minClusterSize))
+	outfile.write('maxClusterSize = {}\n'.format(maxClusterSize))
+	outfile.write('maxResidual = {} # cm\n'.format(maxResidual))
+	outfile.write('trackChi2 = {}\n'.format(trackChi2))
+	outfile.write('trackResX = {}\n'.format(trackResX))
+	outfile.write('trackResY = {}\n'.format(trackResY))
+	outfile.write('MulSigmaOnWindow = {}\n'.format(MulSigmaOnWindow))
+	outfile.write('minRecHitsPerTrack = {}\n'.format(minRecHitsPerTrack))
 
 	outfile.write('# Stand configuration definition\n')
 	StandConfiguration = ['0','0','0','0','0',\

@@ -44,6 +44,7 @@ public:
   double minCLS;
   double trackChi2, trackResX, trackResY;
   double MulSigmaOnWindow;
+  unsigned int minRecHitsPerTrack;
   std::vector<std::string> g_SuperChamType;
   vector<double> g_vecChamType;
 private:
@@ -72,6 +73,7 @@ GEMCosmicMuonForQC8::GEMCosmicMuonForQC8(const edm::ParameterSet& ps) : iev(0) {
   trackResX = ps.getParameter<double>("trackResX");
   trackResY = ps.getParameter<double>("trackResY");
   MulSigmaOnWindow = ps.getParameter<double>("MulSigmaOnWindow");
+  minRecHitsPerTrack = ps.getParameter<unsigned int>("minNumberOfRecHitsPerTrack");
   g_SuperChamType = ps.getParameter<vector<string>>("SuperChamberType");
   g_vecChamType = ps.getParameter<vector<double>>("SuperChamberSeedingLayers");
   TripEventsPerCh = cfg.getParameter<vector<string>>("tripEvents");
@@ -133,7 +135,7 @@ void GEMCosmicMuonForQC8::produce(edm::Event& ev, const edm::EventSetup& setup)
   edm::Handle<GEMRecHitCollection> gemRecHits;
   ev.getByToken(theGEMRecHitToken,gemRecHits);
 
-  if (gemRecHits->size() <= 3 or gemRecHits->size() > 15)
+  if (gemRecHits->size() < minRecHitsPerTrack or gemRecHits->size() > 15)
   {
     ev.put(std::move(trajectorySeeds));
     ev.put(std::move(trackCollection));
@@ -248,8 +250,8 @@ void GEMCosmicMuonForQC8::produce(edm::Event& ev, const edm::EventSetup& setup)
         }
       }
     }
-    if (muRecHits.size() < 3) continue;
-    if (TCN < 3) continue;
+    if (muRecHits.size() < minRecHitsPerTrack) continue;
+    if (TCN < minRecHitsPerTrack) continue;
 
     vector<TrajectorySeed> trajSeedsBody;
     std::vector<TrajectorySeed> *trajSeeds = &trajSeedsBody;
@@ -498,7 +500,7 @@ Trajectory GEMCosmicMuonForQC8::makeTrajectory(TrajectorySeed seed, MuonTransien
     }
   }
 
-  if (rAndhit.size() < 3) return Trajectory();
+  if (rAndhit.size() < minRecHitsPerTrack) return Trajectory();
   vector<pair<double,int>> rAndhitV;
   copy(rAndhit.begin(), rAndhit.end(), back_inserter<vector<pair<double,int>>>(rAndhitV));
   for(unsigned int i=0;i<rAndhitV.size();i++)
@@ -506,7 +508,7 @@ Trajectory GEMCosmicMuonForQC8::makeTrajectory(TrajectorySeed seed, MuonTransien
     consRecHits.push_back(muRecHits[rAndhitV[i].second]);
   }
 
-  if (consRecHits.size() < 3) return Trajectory();
+  if (consRecHits.size() < minRecHitsPerTrack) return Trajectory();
   vector<Trajectory> fitted = theSmoother->trajectories(seed, consRecHits, tsos);
   if ( fitted.size() <= 0 ) return Trajectory();
 
