@@ -204,7 +204,7 @@ void GEMCosmicMuonForQC8::produce(edm::Event& ev, const edm::EventSetup& setup)
     if ( g_vecChamType[ nIdxTestCh ] == 2 ) {nUpType = 4;}
     if ( g_vecChamType[ nIdxTestCh ] == 1 ) {nDnType = 3;}
 
-    int TCN = 0; // Number of hit chambers, not including the test chamber
+    unsigned int TCN = 0; // Number of hit chambers, not including the test chamber
     for (auto ch : gemChambers)
     {
       if (tch == ch) continue;
