@@ -47,6 +47,7 @@ public:
   unsigned int minRecHitsPerTrack;
   std::vector<std::string> g_SuperChamType;
   vector<double> g_vecChamType;
+  std::vector<std::string> TripEventsPerCh;
 private:
   int iev; // events through
   edm::EDGetTokenT<GEMRecHitCollection> theGEMRecHitToken;
@@ -76,7 +77,7 @@ GEMCosmicMuonForQC8::GEMCosmicMuonForQC8(const edm::ParameterSet& ps) : iev(0) {
   minRecHitsPerTrack = ps.getParameter<unsigned int>("minNumberOfRecHitsPerTrack");
   g_SuperChamType = ps.getParameter<vector<string>>("SuperChamberType");
   g_vecChamType = ps.getParameter<vector<double>>("SuperChamberSeedingLayers");
-  TripEventsPerCh = cfg.getParameter<vector<string>>("tripEvents");
+  TripEventsPerCh = ps.getParameter<vector<string>>("tripEvents");
   theGEMRecHitToken = consumes<GEMRecHitCollection>(ps.getParameter<edm::InputTag>("gemRecHitLabel"));
   // register what this produces
   edm::ParameterSet serviceParameters = ps.getParameter<edm::ParameterSet>("ServiceParameters");
