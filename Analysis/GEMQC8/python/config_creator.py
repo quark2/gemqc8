@@ -23,7 +23,7 @@ def configMaker(run_number):
 			line = line.split('\n')[0]
 			SCtype = line.split(',')[0]
 			if (SCtype!='CH_SERIAL_NUMBER'):
-				if (line.split(',')[8]!=run_number):
+				if (int(line.split(',')[8])!=int(run_number)):
 					sys.exit('StandGeometryConfiguration file has something wrong: run rumber not matching...')
 
 	out_name = 'out_run_'
