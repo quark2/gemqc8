@@ -48,8 +48,14 @@
 
 #include "RecoMuon/CosmicMuonProducer/interface/HeaderForQC8.h"
 
+#include <algorithm>
+#include <iomanip>
+
 #include <TFile.h>
 #include <TTree.h>
+#include <TCanvas.h>
+#include <TMath.h>
+
 
 class ValidationQC8 : public GEMBaseValidation
 {
@@ -64,6 +70,7 @@ public:
   double maxCLS, minCLS, maxRes, trackChi2, trackResY, trackResX, MulSigmaOnWindow;
   std::vector<std::string> SuperChamType;
   std::vector<double> vecChamType;
+  std::vector<std::string> TripEventsPerCh;
   bool makeTrack, isMC;
 
   const GEMGeometry* GEMGeometry_;
@@ -89,6 +96,12 @@ private:
   TH1D *residualPhi;
   TH1D *residualEta;
   TH1D *recHitsPerTrack;
+  TH1D *genMuAngX;
+  TH1D *genMuAngY;
+  TH1D *trajMuAngX;
+  TH1D *trajMuAngY;
+  TH1D *deltaMuAngX;
+  TH1D *deltaMuAngY;
 
   TTree *tree;
   int run;
@@ -115,6 +128,21 @@ private:
   float confTestHitZ[30];
   int nTrajHit; // number of trajHits
   int nTrajRecHit; // number of confirmed trajHits
+  float trajAngX;
+  float trajAngY;
+
+  TTree *genTree;
+  float genMuPx;
+  float genMuPy;
+  float genMuPz;
+  float genMuPt;
+  float genMuTheta;
+  float genMuPhi;
+  float genMuX;
+  float genMuY;
+  float genMuZ;
+  float genAngX;
+  float genAngY;
 };
 
 #endif

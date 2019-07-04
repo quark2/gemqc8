@@ -1,9 +1,5 @@
 #include "Analysis/GEMQC8/interface/FastEfficiencyQC8.h"
 
-#include <iomanip>
-
-#include <TCanvas.h>
-
 using namespace std;
 using namespace edm;
 
@@ -17,6 +13,7 @@ FastEfficiencyQC8::FastEfficiencyQC8(const edm::ParameterSet& cfg): GEMBaseValid
 	theService = new MuonServiceProxy(serviceParameters);
 	minCLS = cfg.getParameter<double>("minClusterSize");
 	maxCLS = cfg.getParameter<double>("maxClusterSize");
+	TripEventsPerCh = cfg.getParameter<vector<string>>("tripEvents");
 	theUpdator = new KFUpdator();
 	time(&rawTime);
 
@@ -111,14 +108,75 @@ void FastEfficiencyQC8::analyze(const edm::Event& e, const edm::EventSetup& iSet
 		return ;
 	}
 
+	// Get the events when a chamber was tripping
+	string delimiter = "";
+	string line = "";
+	string interval = "";
+	int ch, beginEvt, endEvt;
+	vector<int> beginTripEvt[30];
+	vector<int> endTripEvt[30];
+	for (unsigned int i = 0; i < TripEventsPerCh.size(); i++)
+	{
+		line = TripEventsPerCh[i];
+
+		delimiter = ",";
+		ch = stoi(line.substr(0, line.find(delimiter)));
+		line.erase(0, line.find(delimiter) + delimiter.length());
+
+		int numberOfIntervals = count(line.begin(), line.end(), ',') + 1; // intervals are number of separators + 1
+		for (int badInterv = 0; badInterv < numberOfIntervals; badInterv++)
+		{
+			delimiter = ",";
+			interval = line.substr(0, line.find(delimiter));
+			delimiter = "-";
+			beginEvt = stoi(interval.substr(0, interval.find(delimiter)));
+			interval.erase(0, interval.find(delimiter) + delimiter.length());
+			endEvt = stoi(interval);
+			if (beginEvt < endEvt)
+			{
+				beginTripEvt[ch].push_back(beginEvt);
+				endTripEvt[ch].push_back(endEvt);
+			}
+			if (endEvt < beginEvt)
+			{
+				beginTripEvt[ch].push_back(endEvt);
+				endTripEvt[ch].push_back(beginEvt);
+			}
+			delimiter = ",";
+			line.erase(0, line.find(delimiter) + delimiter.length());
+		}
+	}
+
 	// Arrays: have a chamber fired
 	bool fired_ch_test[30];
 	bool fired_ch_reference[30];
+	bool validEvent[30];
 
 	for (int ch=0; ch<30; ch++)
 	{
 		fired_ch_test[ch] = false;
 		fired_ch_reference[ch] = false;
+		validEvent[ch] = true;
+	}
+
+	for (int ch=0; ch<30; ch++)
+	{
+		for (unsigned int i = 0; i < beginTripEvt[ch].size(); i++)
+		{
+			if (beginTripEvt[ch].at(i) <= nev && nev <= endTripEvt[ch].at(i))
+			{
+				if (ch%2 == 0)
+				{
+					validEvent[ch] = false;
+					validEvent[ch+1] = false;
+				}
+				if (ch%2 == 1)
+				{
+					validEvent[ch] = false;
+					validEvent[ch-1] = false;
+				}
+			}
+		}
 	}
 
 	// Array of vectors: recHits positions per chamber
@@ -136,63 +194,66 @@ void FastEfficiencyQC8::analyze(const edm::Event& e, const edm::EventSetup& iSet
 		GEMDetId hitID((*rechit).rawId());
 		int chIdRecHit = hitID.chamberId().chamber() + hitID.chamberId().layer() - 2;
 
-		// cluster size plot and selection
-		clusterSize->Fill(chIdRecHit,hitID.roll()-1,(*rechit).clusterSize());
-		if ((*rechit).clusterSize()<minCLS) continue;
-		if ((*rechit).clusterSize()>maxCLS) continue;
+		if (validEvent[chIdRecHit])
+		{
+			// cluster size plot and selection
+			clusterSize->Fill(chIdRecHit,hitID.roll()-1,(*rechit).clusterSize());
+			if ((*rechit).clusterSize()<minCLS) continue;
+			if ((*rechit).clusterSize()>maxCLS) continue;
 
-		// recHits plots
-		GlobalPoint recHitGP = GEMGeometry_->idToDet((*rechit).gemId())->surface().toGlobal(rechit->localPosition());
-    recHits3D->Fill(recHitGP.x(),recHitGP.y(),recHitGP.z());
-    recHits2DPerLayer->Fill(recHitGP.x(),hitID.roll()-1,chIdRecHit % 10);
-		nRecHitsPerEvtPerCh->Fill(nev,chIdRecHit,hitID.roll()-1);
+			// recHits plots
+			GlobalPoint recHitGP = GEMGeometry_->idToDet((*rechit).gemId())->surface().toGlobal(rechit->localPosition());
+	    recHits3D->Fill(recHitGP.x(),recHitGP.y(),recHitGP.z());
+	    recHits2DPerLayer->Fill(recHitGP.x(),hitID.roll()-1,chIdRecHit % 10);
+			nRecHitsPerEvtPerCh->Fill(nev,chIdRecHit,hitID.roll()-1);
 
-		// fired chambers
-		fired_ch_test[chIdRecHit] = true;
+			// fired chambers
+			fired_ch_test[chIdRecHit] = true;
 
-		// local point of the recHit
-		LocalPoint recHitLP = rechit->localPosition();
+			// local point of the recHit
+			LocalPoint recHitLP = rechit->localPosition();
 
-		// Filling the details of the recHit per chamber
-		xRecHit[chIdRecHit].push_back(recHitLP.x());
-		iEtaRecHit[chIdRecHit].push_back(hitID.roll());
-		FirstStripRecHit[chIdRecHit].push_back(rechit->firstClusterStrip());
-		ClusterSizeRecHit[chIdRecHit].push_back(rechit->clusterSize());
+			// Filling the details of the recHit per chamber
+			xRecHit[chIdRecHit].push_back(recHitLP.x());
+			iEtaRecHit[chIdRecHit].push_back(hitID.roll());
+			FirstStripRecHit[chIdRecHit].push_back(rechit->firstClusterStrip());
+			ClusterSizeRecHit[chIdRecHit].push_back(rechit->clusterSize());
 
-		// reference hits only if in fiducial area
+			// reference hits only if in fiducial area
 
-		// Find which chamber is the one in which we had the hit
-		int index=-1;
-  	for (int c=0 ; c<n_ch ; c++)
-  	{
-    	if ((gemChambers[c].id().chamber() + gemChambers[c].id().layer() - 2) == chIdRecHit)
+			// Find which chamber is the one in which we had the hit
+			int index=-1;
+	  	for (int c=0 ; c<n_ch ; c++)
+	  	{
+	    	if ((gemChambers[c].id().chamber() + gemChambers[c].id().layer() - 2) == chIdRecHit)
+				{
+					index = c;
+				}
+	  	}
+
+			GEMChamber ch = gemChambers[index];
+
+			// Define region 'inside' the ieta of the chamber
+			int n_strip = ch.etaPartition(hitID.roll())->nstrips();
+			double min_x = ch.etaPartition(hitID.roll())->centreOfStrip(1).x();
+			double max_x = ch.etaPartition(hitID.roll())->centreOfStrip(n_strip).x();
+
+			if (min_x < max_x)
 			{
-				index = c;
+				min_x = min_x + 4.5;
+				max_x = max_x - 4.5;
 			}
-  	}
 
-		GEMChamber ch = gemChambers[index];
+			if (max_x < min_x)
+			{
+				min_x = min_x - 4.5;
+				max_x = max_x + 4.5;
+			}
 
-		// Define region 'inside' the ieta of the chamber
-		int n_strip = ch.etaPartition(hitID.roll())->nstrips();
-		double min_x = ch.etaPartition(hitID.roll())->centreOfStrip(1).x();
-		double max_x = ch.etaPartition(hitID.roll())->centreOfStrip(n_strip).x();
-
-		if (min_x < max_x)
-		{
-			min_x = min_x + 4.5;
-			max_x = max_x - 4.5;
-		}
-
-		if (max_x < min_x)
-		{
-			min_x = min_x - 4.5;
-			max_x = max_x + 4.5;
-		}
-
-		if ((min_x < recHitLP.x()) and (recHitLP.x() < max_x))
-		{
-			fired_ch_reference[chIdRecHit] = true;
+			if ((min_x < recHitLP.x()) and (recHitLP.x() < max_x))
+			{
+				fired_ch_reference[chIdRecHit] = true;
+			}
 		}
 	}
 

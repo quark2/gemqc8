@@ -210,8 +210,11 @@ void macro_validation(int run, string configDir, string startDateTimeRun)
 		{
 			pos = line.find(comma);
 			split = line.substr(0, pos);
-			if (split == "RunNumber" || split == "ChamberName") continue;
+			if (split == "CH_SERIAL_NUMBER") continue;
 			chamberName.push_back(split);
+			line.erase(0, pos + comma.length());
+
+			pos = line.find(comma);
 			line.erase(0, pos + comma.length());
 
 			pos = line.find(slash);
@@ -344,7 +347,7 @@ void macro_validation(int run, string configDir, string startDateTimeRun)
 
 		// Efficiency results in csv files
 
-		string outFileName = "Efficiency_Ch_Pos_" + to_string(chamberPos[i]) + ".csv";
+		string outFileName = "Efficiency_Ch_Pos_" + to_string(chamberPos[i]) + "_ToDB.csv";
 		outfile.open(outFileName);
 		double eff_value, error_value;
 		string entry = "";

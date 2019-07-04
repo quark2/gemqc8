@@ -1,9 +1,5 @@
 #include "Analysis/GEMQC8/interface/ValidationQC8.h"
 
-#include <iomanip>
-
-#include <TCanvas.h>
-
 using namespace std;
 using namespace edm;
 
@@ -28,6 +24,7 @@ ValidationQC8::ValidationQC8(const edm::ParameterSet& cfg): GEMBaseValidation(cf
   maxRes = cfg.getParameter<double>("maxResidual");
   SuperChamType = cfg.getParameter<vector<string>>("SuperChamberType");
   vecChamType = cfg.getParameter<vector<double>>("SuperChamberSeedingLayers");
+  TripEventsPerCh = cfg.getParameter<vector<string>>("tripEvents");
   edm::ParameterSet smootherPSet = cfg.getParameter<edm::ParameterSet>("MuonSmootherParameters");
   theSmoother = new CosmicMuonSmoother(smootherPSet, theService);
   theUpdator = new KFUpdator();
@@ -49,6 +46,16 @@ ValidationQC8::ValidationQC8(const edm::ParameterSet& cfg): GEMBaseValidation(cf
   residualPhi = fs->make<TH1D>("residualPhi","residualPhi",400,-5,5);
   residualEta = fs->make<TH1D>("residualEta","residualEta",200,-10,10);
   recHitsPerTrack = fs->make<TH1D>("recHitsPerTrack","recHits per reconstructed track",15,0,15);
+  trajMuAngX = fs->make<TH1D>("trajMuAngX","trajAngX (XZ plane)",1000,-1,1);
+  trajMuAngY = fs->make<TH1D>("trajMuAngY","trajAngY (YZ plane)",1000,-0.8,0.8);
+
+
+  if(isMC){
+    genMuAngX = fs->make<TH1D>("genMuAngX","genAngX (XZ plane)",1000,-1,1);
+    genMuAngY = fs->make<TH1D>("genMuAngY","genAngY (YZ plane)",1000,-0.8,0.8);
+    deltaMuAngX = fs->make<TH1D>("deltaMuAngX","trajAngX - genAngX (XZ plane)",1000,-0.1,0.1);
+    deltaMuAngY = fs->make<TH1D>("deltaMuAngY","trajAngY - genAngY (YZ plane)",1000,-0.7,0.7);
+  }
 
   // Tree branches declaration
 
@@ -162,6 +169,23 @@ void ValidationQC8::analyze(const edm::Event& e, const edm::EventSetup& iSetup){
   trajPz = -999.9;
   nTrajHit = 0;
   nTrajRecHit = 0;
+  trajAngX = 999.9;
+  trajAngY = 999.9;
+
+  if (isMC)
+  {
+    genMuPx = -999.9;
+    genMuPy = -999.9;
+    genMuPz = -999.9;
+    genMuPt = -999.9;
+    genMuTheta = -999.9;
+    genMuPhi = -999.9;
+    genMuX = -999.9;
+    genMuY = -999.9;
+    genMuZ = -999.9;
+    genAngX = -999.9;
+    genAngY = -999.9;
+  }
 
   for (int i=0; i<30; i++)
   {
@@ -169,6 +193,45 @@ void ValidationQC8::analyze(const edm::Event& e, const edm::EventSetup& iSetup){
     testTrajHitX[i] = testTrajHitY[i] = testTrajHitZ[i] = -999.9;
     confTestHitX[i] = confTestHitY[i] = confTestHitZ[i] = -999.9;
   }
+
+  // Get the events when a chamber was tripping
+	string delimiter = "";
+	string line = "";
+	string interval = "";
+	int ch, beginEvt, endEvt;
+	vector<int> beginTripEvt[30];
+	vector<int> endTripEvt[30];
+	for (unsigned int i = 0; i < TripEventsPerCh.size(); i++)
+	{
+		line = TripEventsPerCh[i];
+
+		delimiter = ",";
+		ch = stoi(line.substr(0, line.find(delimiter)));
+		line.erase(0, line.find(delimiter) + delimiter.length());
+
+		int numberOfIntervals = count(line.begin(), line.end(), ',') + 1; // intervals are number of separators + 1
+		for (int badInterv = 0; badInterv < numberOfIntervals; badInterv++)
+		{
+			delimiter = ",";
+			interval = line.substr(0, line.find(delimiter));
+			delimiter = "-";
+			beginEvt = stoi(interval.substr(0, interval.find(delimiter)));
+			interval.erase(0, interval.find(delimiter) + delimiter.length());
+			endEvt = stoi(interval);
+			if (beginEvt < endEvt)
+			{
+				beginTripEvt[ch].push_back(beginEvt);
+				endTripEvt[ch].push_back(endEvt);
+			}
+			if (endEvt < beginEvt)
+			{
+				beginTripEvt[ch].push_back(endEvt);
+				endTripEvt[ch].push_back(beginEvt);
+			}
+			delimiter = ",";
+			line.erase(0, line.find(delimiter) + delimiter.length());
+		}
+	}
 
   theService->update(iSetup);
 
@@ -319,8 +382,43 @@ void ValidationQC8::analyze(const edm::Event& e, const edm::EventSetup& iSetup){
     trajPx = gvecTrack.x();
     trajPy = gvecTrack.y();
     trajPz = gvecTrack.z();
+    trajAngX = atan(trajPx/trajPz);
+    trajAngY = atan(trajPy/trajPz);
 
+    trajMuAngX->Fill(trajAngX);
+    trajMuAngY->Fill(trajAngY);
     recHitsPerTrack->Fill(size(bestTraj.recHits()));
+
+    if (isMC)
+    {
+      HepMC::GenParticle *genMuon = NULL;
+
+      edm::Handle<edm::HepMCProduct> genVtx;
+      e.getByToken( this->InputTagToken_US, genVtx);
+      genMuon = genVtx->GetEvent()->barcode_to_particle(1);
+
+      genMuPx = float(genMuon->momentum().x());
+      genMuPy = float(genMuon->momentum().y());
+      genMuPz = float(genMuon->momentum().z());
+      genMuPt = float(genMuon->momentum().perp());
+      genMuTheta = float(genMuon->momentum().theta());
+      genMuPhi = float(genMuon->momentum().phi());
+      genAngX = atan(genMuPx/genMuPz);
+      genAngY = atan(genMuPy/genMuPz);
+
+      genMuAngX->Fill(genAngX);
+      genMuAngY->Fill(genAngY);
+      deltaMuAngX->Fill(trajAngX-genAngX);
+      deltaMuAngY->Fill(trajAngY-genAngY);
+
+      float dUnitGen = 0.1;
+
+      genMuX = float(dUnitGen * genMuon->production_vertex()->position().x());
+      genMuY = float(dUnitGen * genMuon->production_vertex()->position().y());
+      genMuZ = float(dUnitGen * genMuon->production_vertex()->position().z());
+
+      genTree->Fill();
+    }
 
     // Extrapolation to all the chambers, test chamber selected for efficiency calculation
 
@@ -392,51 +490,63 @@ void ValidationQC8::analyze(const edm::Event& e, const edm::EventSetup& iSetup){
           int index = findIndex(ch.id());
           int vfat = findVFAT(tlp.x(), min_x, max_x);
 
-          testTrajHitX[index] = gtrp.x();
-          testTrajHitY[index] = gtrp.y();
-          testTrajHitZ[index] = gtrp.z();
-          hitsVFATdenom->Fill(vfat-1,mRoll-1,index);
+          bool validEvent = true;
+    			for (unsigned int i = 0; i < beginTripEvt[index].size(); i++)
+    			{
+    				if (beginTripEvt[index].at(i) <= nev && nev <= endTripEvt[index].at(i))
+    				{
+    					validEvent = false;
+    				}
+    			}
 
-          g_nNumTrajHit++;
-          nTrajHit++;
-
-          // Check if there's a matching recHit in the test chamber (tmpRecHit)
-
-          double maxR = 99.9;
-          shared_ptr<MuonTransientTrackingRecHit> tmpRecHit;
-
-          for (auto hit : testRecHits)
+          if (validEvent)
           {
-            GEMDetId hitID(hit->rawId());
-            if (hitID.chamberId() != ch.id()) continue;
+            testTrajHitX[index] = gtrp.x();
+            testTrajHitY[index] = gtrp.y();
+            testTrajHitZ[index] = gtrp.z();
+            hitsVFATdenom->Fill(vfat-1,mRoll-1,index);
 
-            GlobalPoint hitGP = hit->globalPosition();
+            g_nNumTrajHit++;
+            nTrajHit++;
 
-            if (fabs(hitGP.x() - gtrp.x()) > maxRes) continue;
-            if (fabs(hitID.roll() - mRoll) > 1) continue;
+            // Check if there's a matching recHit in the test chamber (tmpRecHit)
 
-            // Choosing the closest one
+            double maxR = 99.9;
+            shared_ptr<MuonTransientTrackingRecHit> tmpRecHit;
 
-            double deltaR = (hitGP - gtrp).mag();
-            if (deltaR < maxR)
+            for (auto hit : testRecHits)
             {
-              tmpRecHit = hit;
-              maxR = deltaR;
+              GEMDetId hitID(hit->rawId());
+              if (hitID.chamberId() != ch.id()) continue;
+
+              GlobalPoint hitGP = hit->globalPosition();
+
+              if (fabs(hitGP.x() - gtrp.x()) > maxRes) continue;
+              if (fabs(hitID.roll() - mRoll) > 1) continue;
+
+              // Choosing the closest one
+
+              double deltaR = (hitGP - gtrp).mag();
+              if (deltaR < maxR)
+              {
+                tmpRecHit = hit;
+                maxR = deltaR;
+              }
             }
-          }
 
-          if(tmpRecHit)
-          {
-            Global3DPoint recHitGP = tmpRecHit->globalPosition();
-            confTestHitX[index] = recHitGP.x();
-            confTestHitY[index] = recHitGP.y();
-            confTestHitZ[index] = recHitGP.z();
-            hitsVFATnum->Fill(vfat-1,mRoll-1,index);
-            nTrajRecHit++;
-            g_nNumMatched++;
+            if(tmpRecHit)
+            {
+              Global3DPoint recHitGP = tmpRecHit->globalPosition();
+              confTestHitX[index] = recHitGP.x();
+              confTestHitY[index] = recHitGP.y();
+              confTestHitZ[index] = recHitGP.z();
+              hitsVFATnum->Fill(vfat-1,mRoll-1,index);
+              nTrajRecHit++;
+              g_nNumMatched++;
 
-            residualPhi->Fill(recHitGP.x()-gtrp.x());
-            residualEta->Fill(recHitGP.y()-gtrp.y());
+              residualPhi->Fill(recHitGP.x()-gtrp.x());
+              residualEta->Fill(recHitGP.y()-gtrp.y());
+            }
           }
         }
         continue;

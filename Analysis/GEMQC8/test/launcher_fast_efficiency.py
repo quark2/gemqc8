@@ -75,7 +75,7 @@ if __name__ == '__main__':
     # Create folders for ouput plots per chamber
     import configureRun_cfi as runConfig
     SuperChType = runConfig.StandConfiguration
-    effoutDir = os.path.abspath("launcher_validation.py").split('QC8Test')[0] + outDirName
+    effoutDir = os.path.abspath("launcher_fast_efficiency.py").split('QC8Test')[0] + outDirName
     for i in range (0,30):
         if (SuperChType[int(i/2)] != '0'):
             plotsDirCommand = "mkdir outPlots_Chamber_Pos_" + str(i)

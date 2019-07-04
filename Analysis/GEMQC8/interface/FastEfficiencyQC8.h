@@ -48,8 +48,12 @@
 
 #include "RecoMuon/CosmicMuonProducer/interface/HeaderForQC8.h"
 
+#include <algorithm>
+#include <iomanip>
+
 #include <TFile.h>
 #include <TTree.h>
+#include <TCanvas.h>
 
 class FastEfficiencyQC8 : public GEMBaseValidation
 {
@@ -59,16 +63,17 @@ public:
   ~FastEfficiencyQC8();
   void bookHistograms(DQMStore::IBooker &, edm::Run const &, edm::EventSetup const &) override;
   void analyze(const edm::Event& e, const edm::EventSetup&) override;
-  const GEMGeometry* initGeometry(edm::EventSetup const & iSetup);  
+  const GEMGeometry* initGeometry(edm::EventSetup const & iSetup);
   const GEMGeometry* GEMGeometry_;
   std::vector<GEMChamber> gemChambers;
   int n_ch;
   double maxCLS, minCLS;
+  std::vector<std::string> TripEventsPerCh;
   MuonServiceProxy* theService;
   CosmicMuonSmoother* theSmoother;
   KFUpdator* theUpdator;
   edm::EDGetToken InputTagToken_, InputTagToken_RH;
-  
+
 private:
 
 	TH3D *recHits3D;
@@ -77,15 +82,15 @@ private:
 	TH3D *occupancyIfConfirmedHits;
 	TH1D *DxCorrespondingRecHits;
 	TH1D *DiEtaCorrespondingRecHits;
-	
+
 	TH3D *nRecHitsPerEvtPerCh;
-	
+
   TH1D *numerator;
   TH1D *denominator;
-	
+
 	TH2D *numeratorPerEvt;
 	TH2D *denominatorPerEvt;
-  
+
   TTree *tree;
   int run;
   int lumi;

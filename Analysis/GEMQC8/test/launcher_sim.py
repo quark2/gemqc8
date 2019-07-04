@@ -89,12 +89,7 @@ if __name__ == '__main__':
         out_name = out_name + '0'
     out_name = out_name + run_number + '.root'
 
-    mvToDirCommand = "mv sim_" + out_name + " " + resDirPath+outDirName + "/sim_" + out_name
-    movingToDir = subprocess.Popen(mvToDirCommand.split(),stdout=subprocess.PIPE,universal_newlines=True,cwd=runPath)
-    movingToDir.communicate()
-    time.sleep(1)
-
-    mvToDirCommand = "mv " + out_name + " " + resDirPath+outDirName + "/" + out_name
+    mvToDirCommand = "mv sim_" + out_name + " " + resDirPath+outDirName + "/validation_" + out_name
     movingToDir = subprocess.Popen(mvToDirCommand.split(),stdout=subprocess.PIPE,universal_newlines=True,cwd=runPath)
     movingToDir.communicate()
     time.sleep(1)

@@ -12,20 +12,25 @@
 
 using namespace std;
 
-void macro_tilt_twist(int run, string runPath, TString AlignTablePath){
+void macro_tilt_twist(int run, string runPath, string AlignTablePath){
   // Getting the file
-  TString filename = "temp_out_reco_MC_3_0.root";
-  TFile *infile = TFile::Open(filename, "UPDATE");
-  bool opened = infile->IsOpen();
-  if(opened == true)
-    {
-      cout << "---ROOT file " << filename << " successfully opened...Loading" << endl;
-    }
-  else
+  char *filename = new char[70];
+  char run_number[6] = "";
+  for(int i=6; i>(int)(log10(run)+1); i--){
+    strcat(run_number,"0");
+  }
+  sprintf(filename, "alignment_out_run_%s%d.root", run_number, run);
+
+  if(gSystem->AccessPathName(filename))
     {
       cout << "ERROR: ROOT file " << filename << " does not exist!" << endl;
       exit(EXIT_FAILURE);
     }
+  else
+    {
+      cout << "---ROOT file " << filename << " successfully opened...Loading" << endl;
+    }
+  TFile *infile = TFile::Open(filename, "UPDATE");
 
   //USeful variable declaration
   int i_Eta = 8, i_Col = 3, i_maxSC = 15;
@@ -73,27 +78,50 @@ void macro_tilt_twist(int run, string runPath, TString AlignTablePath){
   TString direc = "AlignmentQC8/";
   TTree *datatree = (TTree*)infile->Get(direc+"tree");
   double dx_prev[i_maxSC], rz_prev[i_maxSC];
-  Float_t dx_pre[i_maxSC], rz_pre[i_maxSC];
   for (int i_SC=0; i_SC<i_maxSC; i_SC++)
     {
-      dx_pre[i_SC]=90000.;
-      rz_pre[i_SC]=90000.;
+      dx_prev[i_SC]=90000.;
+      rz_prev[i_SC]=90000.;
     }
   // Getting the dx and rz at the previous step
-  datatree->SetBranchAddress("dx", &dx_pre);
-  datatree->SetBranchAddress("rz", &rz_pre);
-
-  for(int i=0; i<1; i++)
+  string prevoutfilename = AlignTablePath+"StandAlignmentValues_run" +to_string(run) + ".csv";
+  string word;
+  ifstream prevFile(prevoutfilename, ios::in);
+  if(prevFile.is_open())
     {
-      datatree->GetEntry(i);
-      for (int i_SC=0; i_SC<i_maxSC; i_SC++)
-        {
-          dx_prev[i_SC] = dx_pre[i_SC*2];
-          rz_prev[i_SC] = rz_pre[i_SC*2];
-          cout << "prev dx " <<  dx_prev[i_SC];
-          cout << " prev rz " <<  rz_prev[i_SC] << endl;
-        }
+      cout << "Reading the alignment factor at the previous step from " << prevoutfilename << endl;
+      int i_SC = 0;
+      while(getline(prevFile, line))
+	{
+	  pos = line.find(",");
+	  split = line.substr(0, pos);
+	  if(split == "RunNumber" || pos == string::npos) continue;
+	  else if(split == "Position" || pos == string::npos) continue;
+	  else
+	    {
+	      stringstream linestream(line);
+	      int i = 0;
+	      while(getline(linestream,word, ',')){
+		if(i==1) dx_prev[i_SC] = stod(word);
+		if(i==6) rz_prev[i_SC] = stod(word);
+		i += 1;
+	      }
+	      i_SC += 1;
+	    }
+	}
     }
+  else
+    {
+      cerr << prevoutfilename << " is not correctly opened" << endl;
+      exit(EXIT_FAILURE);
+    }
+
+  for (int i_SC=0; i_SC<i_maxSC; i_SC++)
+    {
+      cout << "prev dx " <<  dx_prev[i_SC];
+      cout << " prev rz " <<  rz_prev[i_SC] << endl;
+    }
+
   // Histogram declaration
   char *histname = new char[20];
   char *histoname = new char[20];
@@ -151,8 +179,7 @@ void macro_tilt_twist(int run, string runPath, TString AlignTablePath){
     }
 
   // Writing the output in csv format
-  char *ofilename = new char[70];
-  sprintf(ofilename,AlignTablePath+"StandAligmentTables/StandAlignmentValues_run%d.csv", run);
+  string ofilename = AlignTablePath+"StandAlignmentValues_run" + to_string(run) + ".csv";
   ofstream oFile(ofilename, std::ios_base::out | std::ios_base::trunc);
   if (oFile.is_open())
     {
