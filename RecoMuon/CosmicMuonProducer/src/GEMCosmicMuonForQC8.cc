@@ -320,6 +320,7 @@ void GEMCosmicMuonForQC8::produce(edm::Event& ev, const edm::EventSetup& setup)
       outerId = bestTrajectory.firstMeasurement().recHit()->geographicalId().rawId();
       innerId = bestTrajectory.lastMeasurement().recHit()->geographicalId().rawId();
     }
+
     //build the TrackExtra
     GlobalPoint gv = outertsos.globalParameters().position();
     GlobalVector gp = outertsos.globalParameters().momentum();
@@ -379,7 +380,6 @@ void GEMCosmicMuonForQC8::produce(edm::Event& ev, const edm::EventSetup& setup)
   ev.put(std::move(trajectoryType));
 
 }
-
 
 int GEMCosmicMuonForQC8::findSeeds(std::vector<TrajectorySeed> *tmptrajectorySeeds,
     MuonTransientTrackingRecHit::MuonRecHitContainer &seedupRecHits,
