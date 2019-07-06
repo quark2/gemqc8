@@ -139,11 +139,6 @@ void macro_hot_dead_strips(int run, string configDir)
 
   // Identification of value for being a dead (0) or hot (above 5 sigmas) strip per chamber
 
-  int NumberOfEvents = 0;
-  tree->SetBranchAddress("ev",&NumberOfEvents);
-  int nTotEvents = tree->GetEntries();
-  tree->GetEntry(nTotEvents-1);
-
   long int DeadStripLimitValue[30];
   long int HotStripLimitValue[30];
 
@@ -165,7 +160,13 @@ void macro_hot_dead_strips(int run, string configDir)
     digisPerStripPerCh[c]->GetYaxis()->SetTitle("Counts");
     digisPerStripPerCh[c]->Draw();
 
-    TF1 *GaussFit = new TF1("GaussFit","gaus",1,int(NumberOfEvents/20000.0)); // da cambiare qui!!!
+    int npeaks=1;
+    TSpectrum *s = new TSpectrum(npeaks);
+    int nfound = s->Search(digisPerStripPerCh[c]);
+    double x_peak;
+    x_peak = s->GetPositionX();
+
+    TF1 *GaussFit = new TF1("GaussFit","gaus",1,x_peak+200);
     digisPerStripPerCh[c]->Fit(GaussFit,"NOQ");
     digisPerStripPerCh[c]->Fit(GaussFit,"Q");
     GaussFit->Draw("SAME");
