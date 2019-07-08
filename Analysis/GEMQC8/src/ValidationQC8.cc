@@ -422,17 +422,6 @@ void ValidationQC8::analyze(const edm::Event& e, const edm::EventSetup& iSetup){
       genTree->Fill();
     }
 
-    // Plots of occupancy of associated recHits and their clusterSize
-    Trajectory::RecHitContainer associatedHits = bestTrajectory.recHits();
-    for (Trajectory::RecHitContainer::const_iterator assocHit = associatedHits.begin(); assocHit != associatedHits.end(); ++assocHit)
-    {
-      GEMDetId assocHitID(assocHit.rawId());
-      int chAssocHit = assocHitID.chamber()+assocHitID.layer()-2;
-      int etaAssocHit = assocHitID.roll()-1;
-      associatedHits2DPerLayer->Fill(assocHitID.x(),etaAssocHit,chAssocHit%10);
-      associatedHitsClusterSize->Fill(chAssocHit,etaAssocHit,assocHit.clusterSize());
-    }
-
     // Extrapolation to all the chambers, test chamber selected for efficiency calculation
 
     nTrajHit = 0;
@@ -549,16 +538,37 @@ void ValidationQC8::analyze(const edm::Event& e, const edm::EventSetup& iSetup){
 
             if(tmpRecHit)
             {
-              Global3DPoint recHitGP = tmpRecHit->globalPosition();
-              confTestHitX[index] = recHitGP.x();
-              confTestHitY[index] = recHitGP.y();
-              confTestHitZ[index] = recHitGP.z();
+              Global3DPoint tempHitGP = tmpRecHit->globalPosition();
+              confTestHitX[index] = tempHitGP.x();
+              confTestHitY[index] = tempHitGP.y();
+              confTestHitZ[index] = tempHitGP.z();
               hitsVFATnum->Fill(vfat-1,mRoll-1,index);
               nTrajRecHit++;
               g_nNumMatched++;
 
-              residualPhi->Fill(recHitGP.x()-gtrp.x());
-              residualEta->Fill(recHitGP.y()-gtrp.y());
+              residualPhi->Fill(tempHitGP.x()-gtrp.x());
+              residualEta->Fill(tempHitGP.y()-gtrp.y());
+
+              GEMDetId confirmedHitID((*tmpRecHit).rawId());
+              int chConfHit = confirmedHitID.chamber()+confirmedHitID.layer()-2;
+              int etaConfHit = confirmedHitID.roll()-1;
+
+              associatedHits2DPerLayer->Fill(tempHitGP.x(),etaConfHit,chConfHit%10);
+
+              for ( GEMRecHitCollection::const_iterator rechit = gemRecHits->begin(); rechit != gemRecHits->end(); ++rechit )
+              {
+            		// calculation of chamber id
+            		GEMDetId hitID((*rechit).rawId());
+            		int chIdRecHit = hitID.chamberId().chamber() + hitID.chamberId().layer() - 2;
+
+                GlobalPoint rechitGP = GEMGeometry_->idToDet((*rechit).gemId())->surface().toGlobal(rechit->localPosition());
+
+                if (fabs(rechitGP.x()-tempHitGP.x())<0.01 && fabs(rechitGP.y()-tempHitGP.y())<0.01 && fabs(rechitGP.z()-tempHitGP.z())<0.01)
+                {
+                  associatedHitsClusterSize->Fill(chConfHit,etaConfHit,(*rechit).clusterSize());
+                  break;
+                }
+              }
             }
           }
         }
