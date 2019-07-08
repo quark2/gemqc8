@@ -40,6 +40,8 @@ options.register('mps',
 
 options.parseArguments()
 
+srcPath = os.path.join(os.environ[ "CMSSW_BASE" ], "src")
+
 # The superchambers in the 15 slots
 SuperChType = runConfig.StandConfiguration
 
@@ -111,6 +113,8 @@ fpath = "/eos/cms/store/group/dpg_gem/comm_gem/QC8_Commissioning/run%06i"%(run_n
 if options.inputPath != "": fpath = options.inputPath
 
 # Input source
+print os.listdir(fpath)
+print ["file:" + os.path.join(fpath, x) for x in os.listdir(fpath) if x.endswith(".dat")]
 process.source = cms.Source("GEMLocalModeDataSource",
                             fileNames = cms.untracked.vstring (["file:" + os.path.join(fpath, x) for x in os.listdir(fpath) if x.endswith(".dat")]),
                             skipEvents=cms.untracked.uint32(0),
@@ -140,7 +144,7 @@ process.GEMCabling = cms.ESSource("PoolDBESSource",
                                   )
 ####################################
 
-#process.MessageLogger.cerr.FwkReport.reportEvery = 1000
+process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 # validation event filter
 process.load('EventFilter.L1TRawToDigi.validationEventFilter_cfi')
 
@@ -171,8 +175,11 @@ process.muonGEMDigis.useDBEMap = True
 process.muonGEMDigis.unPackStatusDigis = True
 
 # Getting hot and dead strips files
+run_number_tmp = run_number
+run_number = 150
 hotStripsFile = "Analysis/GEMQC8/data/HotStripsTables/Mask_HotStrips_run" + str(run_number) + ".dat"
 deadStripsFile = "Analysis/GEMQC8/data/DeadStripsTables/Mask_DeadStrips_run" + str(run_number) + ".dat"
+run_number = run_number_tmp
 
 # digi to reco
 process.load('RecoLocalMuon.GEMRecHit.gemRecHits_cfi')
@@ -187,10 +194,11 @@ process.gemRecHits = cms.EDProducer("GEMRecHitProducer",
                                     )
 
 # Get certified events from file
-pyhtonModulesPath = os.path.abspath("runGEMCosmicStand_validation.py").split('QC8Test')[0]+'QC8Test/src/Analysis/GEMQC8/python/'
+pyhtonModulesPath = os.path.join(srcPath, "Analysis/GEMQC8/python/")
 sys.path.insert(1,pyhtonModulesPath)
 from readCertEvtsFromFile import GetCertifiedEvents
-certEvts = GetCertifiedEvents(run_number)
+#certEvts = GetCertifiedEvents(run_number)
+certEvts = GetCertifiedEvents(1)
 
 # Reconstruction of muon track
 process.load('RecoMuon.TrackingTools.MuonServiceProxy_cff')
@@ -263,6 +271,8 @@ process.dqmSaver.tag = "GEM"
 process.load("DQM.GEM.GEMDQM_cff")
 
 process.GEMDQMSource.recHitsInputLabel = cms.InputTag("gemRecHits")
+
+process.GEMDQMStatusDigi.perSuperchamber = cms.bool(False)
 
 # Path and EndPath definitions
 process.rawTOhits_step = cms.Path(process.muonGEMDigis+process.gemRecHits)

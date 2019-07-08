@@ -2,7 +2,8 @@ import os, sys, io
 
 def GetCertifiedEvents(run_number):
 
-    inputPath = os.path.abspath("readCertEvtsFromFile.py").split('QC8Test')[0]+'QC8Test/src/Analysis/GEMQC8/data/CertifiedEvents/'
+    srcPath = os.path.join(os.environ[ "CMSSW_BASE" ], "src")
+    inputPath = os.path.join(srcPath, "Analysis/GEMQC8/data/CertifiedEvents/")
     in_name = inputPath + "CertifiedEvents_run" + str(run_number) + ".csv"
 
     if (os.path.exists(in_name)):

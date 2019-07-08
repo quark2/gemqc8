@@ -11,9 +11,10 @@ trackChi2 = 3
 trackResX = 0.2
 trackResY = 0.3697
 MulSigmaOnWindow = 5
+minRecHitsPerTrack = 3
 
 # Stand configuration definition
 StandConfiguration = [\
 '0','0','0','0','0',\
-'S','0','S','0','0',\
+'S','S','S','S','S',\
 '0','0','0','0','0']

@@ -46,6 +46,7 @@ public:
   double MulSigmaOnWindow;
   unsigned int minRecHitsPerTrack;
   std::vector<std::string> g_SuperChamType;
+  std::vector<std::string> TripEventsPerCh;
   vector<double> g_vecChamType;
 private:
   int iev; // events through
@@ -76,7 +77,7 @@ GEMCosmicMuonForQC8::GEMCosmicMuonForQC8(const edm::ParameterSet& ps) : iev(0) {
   minRecHitsPerTrack = ps.getParameter<unsigned int>("minNumberOfRecHitsPerTrack");
   g_SuperChamType = ps.getParameter<vector<string>>("SuperChamberType");
   g_vecChamType = ps.getParameter<vector<double>>("SuperChamberSeedingLayers");
-  TripEventsPerCh = cfg.getParameter<vector<string>>("tripEvents");
+  TripEventsPerCh = ps.getParameter<vector<string>>("tripEvents");
   theGEMRecHitToken = consumes<GEMRecHitCollection>(ps.getParameter<edm::InputTag>("gemRecHitLabel"));
   // register what this produces
   edm::ParameterSet serviceParameters = ps.getParameter<edm::ParameterSet>("ServiceParameters");
@@ -251,7 +252,7 @@ void GEMCosmicMuonForQC8::produce(edm::Event& ev, const edm::EventSetup& setup)
       }
     }
     if (muRecHits.size() < minRecHitsPerTrack) continue;
-    if (TCN < minRecHitsPerTrack) continue;
+    if (TCN < (int)minRecHitsPerTrack) continue;
 
     vector<TrajectorySeed> trajSeedsBody;
     std::vector<TrajectorySeed> *trajSeeds = &trajSeedsBody;
