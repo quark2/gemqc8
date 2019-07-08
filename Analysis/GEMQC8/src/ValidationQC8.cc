@@ -557,10 +557,6 @@ void ValidationQC8::analyze(const edm::Event& e, const edm::EventSetup& iSetup){
 
               for ( GEMRecHitCollection::const_iterator rechit = gemRecHits->begin(); rechit != gemRecHits->end(); ++rechit )
               {
-            		// calculation of chamber id
-            		GEMDetId hitID((*rechit).rawId());
-            		int chIdRecHit = hitID.chamberId().chamber() + hitID.chamberId().layer() - 2;
-
                 GlobalPoint rechitGP = GEMGeometry_->idToDet((*rechit).gemId())->surface().toGlobal(rechit->localPosition());
 
                 if (fabs(rechitGP.x()-tempHitGP.x())<0.01 && fabs(rechitGP.y()-tempHitGP.y())<0.01 && fabs(rechitGP.z()-tempHitGP.z())<0.01)
