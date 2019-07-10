@@ -91,8 +91,10 @@ private:
   TH2D *digisPerEvtPerCh;
   TH3D *recHits3D;
   TH3D *recHits2DPerLayer;
+  TH3D *associatedHits2DPerLayer;
   TH1D *recHitsPerEvt;
   TH3D *clusterSize;
+  TH3D *associatedHitsClusterSize;
   TH1D *residualPhi;
   TH1D *residualEta;
   TH1D *recHitsPerTrack;

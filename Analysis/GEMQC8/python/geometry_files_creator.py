@@ -32,7 +32,7 @@ def geomMaker(run_number, AlignOption):
 					line = line.split('\n')[0]
 					SCtype = line.split(',')[0]
 					if (SCtype=='RunNumber'):
-						if (line.split(',')[1]!=run_number):
+						if (int(line.split(',')[1])!=int(run_number)):
 							sys.exit('StandAlignmentValues file has something wrong: run rumber not matching...')
 
 		if (os.path.exists(infileName)):
@@ -59,7 +59,7 @@ def geomMaker(run_number, AlignOption):
 					line = line.split('\n')[0]
 					SCtype = line.split(',')[0]
 					if (SCtype!='POSITION'):
-						if (line.split(',')[7]!=run_number):
+						if (int(line.split(',')[7])!=int(run_number)):
 							sys.exit('StandAlignmentValues file has something wrong: run rumber not matching...')
 
 		if (os.path.exists(infileName)):

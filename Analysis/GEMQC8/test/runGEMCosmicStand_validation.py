@@ -155,15 +155,6 @@ process.tmtFilter.mpList = cms.untracked.vint32(options.mps)
 
 strOutput = runConfig.OutputFileName
 
-process.output = cms.OutputModule("PoolOutputModule",
-                                  SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('validation_step')),
-                                  dataset = cms.untracked.PSet(dataTier = cms.untracked.string('RECO'),filterName = cms.untracked.string('')),
-                                  eventAutoFlushCompressedSize = cms.untracked.int32(10485760),
-                                  fileName = cms.untracked.string('file:'+strOutput),
-                                  outputCommands = cms.untracked.vstring( ('keep *')),
-                                  splitLevel = cms.untracked.int32(0)
-                                  )
-
 # Additional output definition
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
@@ -287,8 +278,7 @@ process.MEtoEDMConverter.deleteAfterCopy = cms.untracked.bool(False)
 process.schedule = cms.Schedule(process.rawTOhits_step,
                                 process.reconstruction_step,
                                 process.validation_step,
-                                process.endjob_step,
-                                process.output_step
+                                process.endjob_step
                                 )
 
 # enable validation event filtering
