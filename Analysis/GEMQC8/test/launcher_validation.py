@@ -19,7 +19,6 @@ if __name__ == '__main__':
     alignmentTablesPath = os.path.join(srcPath, "Analysis/GEMQC8/data/StandAligmentTables/")
     resDirPath = os.path.join(os.environ[ "CMSSW_BASE" ], "../")
 
-    print(pyhtonModulesPath)
     sys.path.insert(0,pyhtonModulesPath)
 
     import config_creator

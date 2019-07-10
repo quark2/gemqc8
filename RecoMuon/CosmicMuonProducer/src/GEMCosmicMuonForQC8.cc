@@ -46,7 +46,6 @@ public:
   double MulSigmaOnWindow;
   unsigned int minRecHitsPerTrack;
   std::vector<std::string> g_SuperChamType;
-  std::vector<std::string> TripEventsPerCh;
   vector<double> g_vecChamType;
   std::vector<std::string> TripEventsPerCh;
 private:
