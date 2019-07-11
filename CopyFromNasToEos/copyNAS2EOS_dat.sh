@@ -11,12 +11,13 @@ DIRECTORY=/eos/cms/store/group/dpg_gem/comm_gem/QC8_Commissioning/run$RUN
 src=/data/bigdisk/GEM-Data-Taking/GE11_QC8/Cosmics/run$RUN
 COUNT=0
 COPY=0
+NF=-1
 
 if [ ! -d "$DIRECTORY" ]; then
-echo "Creating Directory: "$DIRECTORY
-mkdir $DIRECTORY
+	echo "Creating Directory: "$DIRECTORY
+	mkdir $DIRECTORY
 else
-echo "Existing Directory: "$DIRECTORY
+	echo "Existing Directory: "$DIRECTORY
 fi
 
 #Get the list of files to send
@@ -26,16 +27,23 @@ FILES=$(ssh gemuser@gem904qc8daq ls ${src}"_Cosmic_CERNQC8"*".dat")
 echo "The list of files to be copied is:"
 for f in $FILES\;
 do
-echo $f
-((COUNT++))
+	echo $f
+	((COUNT++))
 done
+
+MODTIME=$(ssh gemuser@gem904qc8daq date -r ${src}"_Cosmic_CERNQC8"*"chunk_0.dat" +"%Y-%m-%d_%H-%M-%S")
+#echo $MODTIME
 
 #Copy the files
 echo "Copying files"
 for f in $FILES;
 do
-echo "Processing " $f
-scp "gemuser@gem904qc8daq:$f" $DIRECTORY
+	echo "Processing " $f
+	((NF++))
+    chunk=$(printf "%06d" $NF)
+	name=run$RUN"_Cosmic_CERNQC8_"$MODTIME"_chunk_"$chunk".dat"
+	#echo $name
+	scp "gemuser@gem904qc8daq:$f" $DIRECTORY/$name
 done
 
 #Confirm for the user that the files were copied
@@ -46,11 +54,11 @@ COPIED=$(ls $DIRECTORY)
 
 for c in $COPIED;
 do
-((COPY++))
+	((COPY++))
 done
 
 if [ $COUNT -eq $COPY ]; then
-echo "All files have been copied!"
+        echo "All files have been copied!"
 else
-echo "Some files are missing!"
+	echo "Some files are missing!"
 fi
