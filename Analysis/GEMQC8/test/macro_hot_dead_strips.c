@@ -160,13 +160,13 @@ void macro_hot_dead_strips(int run, string configDir)
     digisPerStripPerCh[c]->GetYaxis()->SetTitle("Counts");
     digisPerStripPerCh[c]->Draw();
 
-    int npeaks=2;
+    int npeaks=3;
     TSpectrum *s = new TSpectrum(npeaks);
     int nfound = s->Search(digisPerStripPerCh[c]);
     double *x_peak;
     x_peak = s->GetPositionX();
 
-    float centroid_peak = (x_peak[0]+x_peak[1])/2;
+    float centroid_peak = (x_peak[0]+x_peak[1]+x_peak[2])/2;
 
     TF1 *GaussFit = new TF1("GaussFit","gaus",1,centroid_peak+300.0);
     digisPerStripPerCh[c]->Fit(GaussFit,"RQ");
