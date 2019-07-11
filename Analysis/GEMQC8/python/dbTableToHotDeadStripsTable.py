@@ -4,16 +4,19 @@ from rawIDmapping import map
 
 def SwMappingHotDeadStrips(run_number,mask_reason):
 
-    if (mask_reason == "HotStrips"):
+    if (mask_reason == "hot"):
         hotStripsTablesPath = os.path.abspath("dbTableToHotDeadStripsTable.py").split('QC8Test')[0] + 'QC8Test/src/Analysis/GEMQC8/data/HotStripsTables/'
         in_name = hotStripsTablesPath + "HotStrips_run{0}.csv".format(run_number)
-    elif (mask_reason == "DeadStrips"):
+        TheFileName = in_name.split('/')[-1]
+        outfile_name = hotStripsTablesPath + "Mask_" + TheFileName[:-4] + '.dat'
+    elif (mask_reason == "dead"):
         deadStripsTablesPath = os.path.abspath("dbTableToHotDeadStripsTable.py").split('QC8Test')[0] + 'QC8Test/src/Analysis/GEMQC8/data/DeadStripsTables/'
-        in_name = deadtripsTablesPath + "DeadStrips_run{0}.csv".format(run_number)
+        in_name = deadStripsTablesPath + "DeadStrips_run{0}.csv".format(run_number)
+        TheFileName = in_name.split('/')[-1]
+        outfile_name = deadStripsTablesPath + "Mask_" + TheFileName[:-4] + '.dat'
     else: print("This mask type does not exist!")
 
     if (os.path.exists(in_name)):
-        outfile_name = "Mask_" + in_name[:-4] + '.dat'
         with open(outfile_name,"w+") as outfile:
             with open(in_name) as infile:
                 for line in infile:
@@ -28,20 +31,24 @@ def SwMappingHotDeadStrips(run_number,mask_reason):
                         row = int(position.split('/')[0])
                         column = int(position.split('/')[1])
                         SCnumber = (5 * (column - 1)) + (row - 1)
+                        if (position.split('/')[2] == 'B'):
+                        	chNumber = 2 * SCnumber
+                        if (position.split('/')[2] == 'T'):
+                        	chNumber = 2 * SCnumber + 1
 
                         vfat = int(line.split(',')[3])
                         eta = 8 - (vfat%8)
 
                         strip = int(line.split(',')[5])
 
-                        det_pos = str(SCnumber) + "/" + str(eta)
+                        det_pos = str(chNumber) + "/" + str(eta)
 
                         rawId = map.get(det_pos)
 
-                        outfile.write(rawId + " " + strip + "\n")
+                        outfile.write(str(rawId) + " " + str(strip) + "\n")
 
 		print("\n")
-		print("Success: " + in_name + " read to generate " + out_name)
+		print("Success: " + in_name + " read to generate " + outfile_name)
 		print("\n")
 
     else:
