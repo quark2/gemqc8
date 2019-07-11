@@ -52,7 +52,8 @@ ValidationQC8::ValidationQC8(const edm::ParameterSet& cfg): GEMBaseValidation(cf
   trajMuAngY = fs->make<TH1D>("trajMuAngY","trajAngY (YZ plane)",1000,-0.8,0.8);
 
 
-  if(isMC){
+  if(isMC)
+  {
     genMuAngX = fs->make<TH1D>("genMuAngX","genAngX (XZ plane)",1000,-1,1);
     genMuAngY = fs->make<TH1D>("genMuAngY","genAngY (YZ plane)",1000,-0.8,0.8);
     deltaMuAngX = fs->make<TH1D>("deltaMuAngX","trajAngX - genAngX (XZ plane)",1000,-0.1,0.1);
@@ -81,6 +82,24 @@ ValidationQC8::ValidationQC8(const edm::ParameterSet& cfg): GEMBaseValidation(cf
   tree->Branch("confTestHitZ",&confTestHitZ,"confTestHitZ[30]/F");
   tree->Branch("nTrajHit",&nTrajHit,"nTrajHit/I");
   tree->Branch("nTrajRecHit",&nTrajRecHit,"nTrajRecHit/I");
+
+  if (isMC)
+  {
+    // Tree for gen events
+    genTree = fs->make<TTree>("genTree", "gen info for QC8");
+    genTree->Branch("genMuPx",&genMuPx,"genMuPx/F");
+    genTree->Branch("genMuPy",&genMuPy,"genMuPy/F");
+    genTree->Branch("genMuPz",&genMuPz,"genMuPz/F");
+    genTree->Branch("genMuPt",&genMuPt,"genMuPt/F");
+    genTree->Branch("genMuTheta",&genMuTheta,"genMuTheta/F");
+    genTree->Branch("genMuPhi",&genMuPhi,"genMuPhi/F");
+    genTree->Branch("genMuX",&genMuX,"genMuX/F");
+    genTree->Branch("genMuY",&genMuY,"genMuY/F");
+    genTree->Branch("genMuZ",&genMuZ,"genMuZ/F");
+    ///???
+    genTree->Branch("genAngX",&genAngX,"genAngX/F");
+    genTree->Branch("genAngY",&genAngY,"genAngY/F");
+  }
 
   printf("End of ValidationQC8::ValidationQC8() at %s\n", asctime(localtime(&rawTime)));
 }

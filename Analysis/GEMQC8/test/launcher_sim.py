@@ -95,7 +95,8 @@ if __name__ == '__main__':
     time.sleep(1)
 
     # Efficiency computation & output
-    effCommand = "root -l -q " + runPath + "macro_validation.c(" + run_number + ",\"" + configTablesPath + "\")"
+    startDateTimeFromDB = "2019-03-14_09:04:00"
+    effCommand = "root -l -q " + runPath + "macro_validation.c(" + run_number + ",\"" + configTablesPath + "\",\"" + startDateTimeFromDB + "\")"
     efficiency = subprocess.Popen(effCommand.split(),stdout=subprocess.PIPE,universal_newlines=True,cwd=effoutDir)
     while efficiency.poll() is None:
         line = efficiency.stdout.readline()
