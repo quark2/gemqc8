@@ -306,12 +306,13 @@ void macro_validation(int run, string configDir, string startDateTimeRun)
 	delimiter = "_";
 	int day = stoi(endDateTimeRun.substr(0, endDateTimeRun.find(delimiter)));
 	endDateTimeRun.erase(0, endDateTimeRun.find(delimiter) + delimiter.length());
-	delimiter = ":";
+	delimiter = "-";
 	int hour = stoi(endDateTimeRun.substr(0, endDateTimeRun.find(delimiter)));
 	endDateTimeRun.erase(0, endDateTimeRun.find(delimiter) + delimiter.length());
-	int minutes = stoi(endDateTimeRun);
+	delimiter = "-";
+	int minutes = stoi(endDateTimeRun.substr(0, endDateTimeRun.find(delimiter)));
 
-	startDateTimeRun = to_string(year) + "-" + string(2-to_string(month).length(),'0').append(to_string(month)) + "-" + string(2-to_string(day).length(),'0').append(to_string(day)) + " " + string(2-to_string(hour).length(),'0').append(to_string(hour)) + ":" + string(2-to_string(minutes).length(),'0').append(to_string(minutes));
+	startDateTimeRun = to_string(year) + "-" + string(2-to_string(month).length(),'0').append(to_string(month)) + "-" + string(2-to_string(day).length(),'0').append(to_string(day)) + " " + string(2-to_string(hour).length(),'0').append(to_string(hour)) + "-" + string(2-to_string(minutes).length(),'0').append(to_string(minutes));
 
 	int plus_hours = int((minutes + approxRunningTimeInMinutes)/60);
 	minutes = (minutes + approxRunningTimeInMinutes)%60;
@@ -341,7 +342,7 @@ void macro_validation(int run, string configDir, string startDateTimeRun)
 
 	month = month + plus_months;
 
-	endDateTimeRun = to_string(year) + "-" + string(2-to_string(month).length(),'0').append(to_string(month)) + "-" + string(2-to_string(day).length(),'0').append(to_string(day)) + " " + string(2-to_string(hour).length(),'0').append(to_string(hour)) + ":" + string(2-to_string(minutes).length(),'0').append(to_string(minutes));
+	endDateTimeRun = to_string(year) + "-" + string(2-to_string(month).length(),'0').append(to_string(month)) + "-" + string(2-to_string(day).length(),'0').append(to_string(day)) + " " + string(2-to_string(hour).length(),'0').append(to_string(hour)) + "-" + string(2-to_string(minutes).length(),'0').append(to_string(minutes));
 
 	// Results for the 30 chambers
 

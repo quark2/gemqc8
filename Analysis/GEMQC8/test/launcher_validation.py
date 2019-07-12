@@ -9,7 +9,6 @@ if __name__ == '__main__':
 
     run_number = sys.argv[1]
     xlsx_csv_conversion_flag = sys.argv[2]
-    userDB_add = sys.argv[3]
 
     # Different paths definition
     srcPath = os.path.abspath("launcher_validation.py").split('QC8Test')[0]+'QC8Test/src/'
@@ -23,7 +22,6 @@ if __name__ == '__main__':
 
     import config_creator
     import geometry_files_creator
-    import date_time_runInfoDB
 
     # Conversion from excel to csv files
     if (xlsx_csv_conversion_flag == "xlsxTOcsv=ON"):
@@ -42,10 +40,11 @@ if __name__ == '__main__':
     time.sleep(1)
 
     # Retrieve start date and time of the run
-    #startDateTimeFromDB = date_time_runInfoDB.startDateTime(run_number,userDB_add)
-    startDateTimeFromDB = "2019-03-14 09:04:00"
-    startDateTimeFromDB = startDateTimeFromDB.rsplit(':', 1)[0]
-    startDateTimeFromDB = startDateTimeFromDB.split(' ')[0] + '_' + startDateTimeFromDB.split(' ')[1]
+    fpath =  "/eos/cms/store/group/dpg_gem/comm_gem/QC8_Commissioning/run{:06d}/".format(int(run_number))
+    for x in os.listdir(fpath):
+         if x.endswith("000000.dat"):
+             file0name = x
+    startDateTime = file0name.split('_')[3] + "_" + file0name.split('_')[4]
     time.sleep(1)
 
     # Compiling after the generation of the geometry files
@@ -109,7 +108,7 @@ if __name__ == '__main__':
     time.sleep(1)
 
     # Efficiency computation & output
-    effCommand = "root -l -q " + runPath + "macro_validation.c(" + run_number + ",\"" + configTablesPath + "\",\"" + startDateTimeFromDB + "\")"
+    effCommand = "root -l -q " + runPath + "macro_validation.c(" + run_number + ",\"" + configTablesPath + "\",\"" + startDateTime + "\")"
     efficiency = subprocess.Popen(effCommand.split(),stdout=subprocess.PIPE,universal_newlines=True,cwd=effoutDir)
     while efficiency.poll() is None:
         line = efficiency.stdout.readline()

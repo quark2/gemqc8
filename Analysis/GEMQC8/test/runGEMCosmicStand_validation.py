@@ -101,10 +101,7 @@ for i in xrange(len(SuperChType)):
 # Config importation & settings
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(options.eventsPerJob))
 
-fpath =  "/eos/cms/store/group/dpg_gem/comm_gem/QC8_Commissioning/run"
-for i in range(6-len(str(run_number))):
-    fpath = fpath + '0'
-fpath = fpath + str(run_number) + "/"
+fpath =  "/eos/cms/store/group/dpg_gem/comm_gem/QC8_Commissioning/run{:06d}/".format(int(run_number))
 
 # Input source
 process.source = cms.Source("GEMLocalModeDataSource",
