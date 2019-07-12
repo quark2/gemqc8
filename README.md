@@ -9,8 +9,10 @@ mv gemqc8/* .
 rm -rf gemqc8
 scram b -j 4
 cd Analysis/GEMQC8/test
-python launcher_fast_efficiency.py 127 xlsxTOcsv=OFF
-python launcher_validation.py 127 xlsxTOcsv=OFF ask_to_QC8_PFA_coordination
+python launcher_hot_dead_strips.py 191 xlsxTOcsv=OFF
+python launcher_certify_events.py 191 xlsxTOcsv=OFF
+python launcher_fast_efficiency.py 191 xlsxTOcsv=OFF
+python launcher_validation.py 191 xlsxTOcsv=OFF
 ```
 
 If you want to run simulations, download the package following these instructions:
