@@ -267,11 +267,12 @@ void ValidationQC8::analyze(const edm::Event& e, const edm::EventSetup& iSetup){
     {
       nNumDigi++;
       const GEMDetId& gemId = (*gemdgIt).first;
+      int chIdRecHit = gemId.chamberId().chamber()+gemId.chamberId().layer()-2;
       const GEMDigiCollection::Range& range = (*gemdgIt).second;
       for ( auto digi = range.first; digi != range.second; ++digi )
       {
-        digiStrips->Fill(digi->strip(),gemId.roll()-1,(gemId.chamberId().chamber()+gemId.chamberId().layer()-2)); // Strip#=[0,383] -> OK , Eta#=[1,8] -> -1
-        nDigisPerCh[(gemId.chamberId().chamber()+gemId.chamberId().layer()-2)]++;
+        digiStrips->Fill(digi->strip(),gemId.roll()-1,chIdRecHit); // Strip#=[0,383] -> OK , Eta#=[1,8] -> -1
+        nDigisPerCh[chIdRecHit]++;
       }
     }
   }
