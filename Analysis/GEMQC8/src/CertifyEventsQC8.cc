@@ -9,6 +9,7 @@ CertifyEventsQC8::CertifyEventsQC8(const edm::ParameterSet& cfg): GEMBaseValidat
 	time(&rawTime);
 	printf("Begin of CertifyEventsQC8::CertifyEventsQC8() at %s\n", asctime(localtime(&rawTime)));
 	InputTagToken_RH = consumes<GEMRecHitCollection>(cfg.getParameter<edm::InputTag>("recHitsInputLabel"));
+	InputTagToken_DG = consumes<GEMDigiCollection>(cfg.getParameter<edm::InputTag>("gemDigiLabel"));
 	edm::ParameterSet serviceParameters = cfg.getParameter<edm::ParameterSet>("ServiceParameters");
 	theService = new MuonServiceProxy(serviceParameters);
 	minCLS = cfg.getParameter<double>("minClusterSize");
@@ -21,7 +22,8 @@ CertifyEventsQC8::CertifyEventsQC8(const edm::ParameterSet& cfg): GEMBaseValidat
 	// Histograms declaration
 
 	// nRecHitsPerEventPerChamber: evolution in time
-	nRecHitsPerEvtPerCh = fs->make<TH2D>("nRecHitsPerEvtPerCh","recHits per ieta per ch vs event (packages of 1000 evts)",12000,0,12000000,30,0,30);
+	nRecHitsPerEvtPerCh = fs->make<TH2D>("nRecHitsPerEvtPerCh","recHits per ch vs event (packages of 1000 evts)",12000,0,12000000,30,0,30);
+	nDigisPerEvtPerCh = fs->make<TH2D>("nDigisPerEvtPerCh","digis per ch vs event (packages of 1000 evts)",12000,0,12000000,30,0,30);
 
 	// Tree branches declaration
 
@@ -83,6 +85,20 @@ void CertifyEventsQC8::analyze(const edm::Event& e, const edm::EventSetup& iSetu
 	nev = e.id().event();
 
 	theService->update(iSetup);
+
+	edm::Handle<GEMDigiCollection> digis;
+	e.getByToken( this->InputTagToken_DG, digis);
+	for (GEMDigiCollection::DigiRangeIterator gemdgIt = digis->begin(); gemdgIt != digis->end(); ++gemdgIt)
+	{
+		const GEMDetId& gemId = (*gemdgIt).first;
+		int chIdRecHit = gemId.chamberId().chamber()+gemId.chamberId().layer()-2;
+
+		const GEMDigiCollection::Range& range = (*gemdgIt).second;
+		for ( auto digi = range.first; digi != range.second; ++digi )
+		{
+			nDigisPerEvtPerCh->Fill(nev,chIdRecHit);
+		}
+	}
 
 	edm::Handle<GEMRecHitCollection> gemRecHits;
 	e.getByToken(this->InputTagToken_RH, gemRecHits);

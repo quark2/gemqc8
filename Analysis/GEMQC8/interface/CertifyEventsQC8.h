@@ -70,11 +70,12 @@ public:
   MuonServiceProxy* theService;
   CosmicMuonSmoother* theSmoother;
   KFUpdator* theUpdator;
-  edm::EDGetToken InputTagToken_, InputTagToken_RH;
+  edm::EDGetToken InputTagToken_, InputTagToken_RH, InputTagToken_DG;
 
 private:
 
   TH2D *nRecHitsPerEvtPerCh;
+  TH2D *nDigisPerEvtPerCh;
 
   TTree *tree;
   int run;
