@@ -126,7 +126,7 @@ CondDB.connect = cms.string('sqlite_fip:Analysis/GEMQC8/data/EMapFiles/'+eMapFil
 process.GEMCabling = cms.ESSource("PoolDBESSource",
                                   CondDB,
                                   toGet = cms.VPSet(cms.PSet(record = cms.string('GEMeMapRcd'),
-                                                             tag = cms.string('GEMeMap_v6')
+                                                             tag = cms.string('GEMeMap_QC8')
                                                              )
                                                     )
                                   )
