@@ -7,7 +7,7 @@ def configMaker(run_number):
 	maxClusterSize = 10
 	maxResidual = 5.0
 	trackChi2 = 3
-	trackResX = 0.2
+	trackResX = 0.3
 	trackResY = 0.3697
 	MulSigmaOnWindow = 5
 	minRecHitsPerTrack = 4
