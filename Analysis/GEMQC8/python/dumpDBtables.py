@@ -7,7 +7,8 @@ def getConfigurationTable(run_num,userRunInfoDB_add):
 
     runDateTime = date_time_runInfoDB.startDateTime(run_num,userRunInfoDB_add)
 
-    db = cx_Oracle.connect('GEM_904_COND/904CondDB@INT2R')
+    #db = cx_Oracle.connect('GEM_904_COND/904CondDB@INT2R') # development DB
+    db = cx_Oracle.connect('CMS_COND_GENERAL_R/p3105rof@cms_omds_adg') # production DB
     cur = db.cursor()
 
     delta_min = 94608000 # minimum value of delta (this value is the # of seconds in 3 years)
