@@ -3,8 +3,8 @@ import FWCore.ParameterSet.Config as cms
 sys.path.append(os.getenv('CMSSW_BASE')+'/src/Analysis/GEMQC8/test')
 import configureRun_cfi as runConfig
 
-run_number = 127
-SuperChType = ['0','0','0','0','0',\
+run_number = 200
+SuperChType = ['S','S','S','0','S',\
                'S','S','S','S','S',\
                '0','0','0','0','0']
 
@@ -79,7 +79,7 @@ CondDB.connect = cms.string('sqlite_fip:Analysis/GEMQC8/data/EMapFiles/'+eMapFil
 
 process.GEMCabling = cms.ESSource("PoolDBESSource",
                                   CondDB,
-                                  toGet = cms.VPSet(cms.PSet(record = cms.string('GEMeMapRcd'), tag = cms.string('GEMeMap_v6')))
+                                  toGet = cms.VPSet(cms.PSet(record = cms.string('GEMeMapRcd'), tag = cms.string('GEMeMap_QC8')))
 )
 ####################################
 
@@ -97,6 +97,12 @@ process.gemRecHits = cms.EDProducer("GEMRecHitProducer",
                                     gemDigiLabel = cms.InputTag("muonGEMDigis"),
 )
 
+# Get certified events from file
+pyhtonModulesPath = os.path.abspath("runGEMCosmicStand_validation.py").split('QC8Test')[0]+'QC8Test/src/Analysis/GEMQC8/python/'
+sys.path.insert(2,pyhtonModulesPath)
+from readCertEvtsFromFile import GetCertifiedEvents
+certEvts = GetCertifiedEvents(run_number)
+
 # Reconstruction of muon track
 process.load('RecoMuon.TrackingTools.MuonServiceProxy_cff')
 process.MuonServiceProxy.ServiceParameters.Propagators.append('StraightLinePropagator')
@@ -109,8 +115,10 @@ process.GEMCosmicMuonForQC8 = cms.EDProducer("GEMCosmicMuonForQC8",
                                              trackResX = cms.double(runConfig.trackResX),
                                              trackResY = cms.double(runConfig.trackResY),
                                              MulSigmaOnWindow = cms.double(runConfig.MulSigmaOnWindow),
+                                             minNumberOfRecHitsPerTrack = cms.uint32(runConfig.minRecHitsPerTrack),
                                              SuperChamberType = cms.vstring(SuperChType),
                                              SuperChamberSeedingLayers = cms.vdouble(SuperChSeedingLayers),
+                                             tripEvents = cms.vstring(certEvts),
                                              MuonSmootherParameters = cms.PSet(
                                                 PropagatorAlong = cms.string('SteppingHelixPropagatorAny'),
                                                 PropagatorOpposite = cms.string('SteppingHelixPropagatorAny'),
@@ -130,13 +138,13 @@ process.add_(
     cms.Service("ISpyService",
         outputFileName = cms.untracked.string('qc8.ig'),
         outputIg = cms.untracked.bool(True),
-        outputMaxEvents = cms.untracked.int32(10), # These are the number of events per ig file 
+        outputMaxEvents = cms.untracked.int32(10000), # These are the number of events per ig file
         debug = cms.untracked.bool(False)
     )
 )
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(10) # These are the number of events to cycle through in the input root file
+    input = cms.untracked.int32(10000) # These are the number of events to cycle through in the input root file
 )
 
 process.load("ISpy.Analyzers.ISpyEvent_cfi")
