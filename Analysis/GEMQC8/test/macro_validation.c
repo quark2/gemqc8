@@ -426,9 +426,9 @@ void macro_validation(int run, string configDir, string startDateTimeRun)
 			eff_value = eff1D[c]->GetY()[pointIndex];
 			error_value = (eff1D[c]->GetEYhigh()[pointIndex] + eff1D[c]->GetEYlow()[pointIndex]) / 2.0;
 			int eta_partition = 7 - (vfat % 8);
-			double cls_mean = clusterSize1D[c][eta_partition]->GetMean();
-			double cls_sigma = clusterSize1D[c][eta_partition]->GetStdDev();
-			entry = to_string(vfat) + "," + to_string(eff_value) + "," + to_string(error_value) + "," + to_string(cls_mean) + "," + to_string(cls_sigma) + "\n"; // here we have to insert the values of percent_masked
+			double cls_mean = assocHitsClusterSize1D[c][eta_partition]->GetMean();
+			double cls_sigma = assocHitsClusterSize1D[c][eta_partition]->GetStdDev();
+			entry = to_string(vfat) + "," + to_string(eff_value) + "," + to_string(error_value) + "," + to_string(cls_mean) + "," + to_string(cls_sigma) + ",0" + "\n";
 			outfile << entry;
 		}
 		outfile.close();
