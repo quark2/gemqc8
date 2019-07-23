@@ -78,6 +78,20 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 		eff1D[ch]->Divide(num1D[ch],denom1D[ch]);
 	}
 
+	// Getting average efficiency per chamber
+
+	TH1D *NumPerCh = new TH1D(name,"",30,-0.5,23.5);
+	TH1D *DenomPerCh = new TH1D(name,"",30,-0.5,23.5);
+	TGraphAsymmErrors *EffPerCh = new TGraphAsymmErrors;
+
+	for (int ch=0; ch<30; ch++)
+	{
+		NumPerCh->SetBinContent(ch+1,num1D[ch]->Integral());
+		DenomPerCh->SetBinContent(ch+1,denom1D[ch]->Integral());
+	}
+
+	EffPerCh->Divide(NumPerCh,DenomPerCh);
+
 	// Generating 2D histograms for the 5*2 rows
 
 	TH2D *eff2D[10];
@@ -346,23 +360,21 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 
 	// Check of file of dead strips to add number to the DB HotStripsTables
 
-	string deadStripsTable = dataDir + "DeadStripsTables/DeadStrips_run" + to_string(run) + ".csv";
-	ifstream standConfigFile (configName);
+	string deadStripsFileName = dataDir + "DeadStripsTables/DeadStrips_run" + to_string(run) + ".csv";
+	ifstream deadStripsTable (deadStripsFileName);
 
-	string line, split, comma = ",", slash = "/";
-	int ChPos = 0, VfatPos = 0;
-	size_t pos = 0;
+	ChPos = 0;
+	int VfatPos = 0;
+	pos = 0;
 	int deadStrips[30][24];
 
-	for (ch = 0; ch < 30; ch++)
+	for (int ch = 0; ch < 30; ch++)
 	{
-		for (vfat = 24; vfat < 24; vfat++)
+		for (int vfat = 24; vfat < 24; vfat++)
 		{
 			deadStrips[ch][vfat] = 0;
 		}
 	}
-
-	CH_SERIAL_NUMBER,GEM_NUMBER,POSITION,VFAT,CHANNEL,STRIP,RUN_NUMBER
 
 	if (deadStripsTable.is_open())
 	{
@@ -400,7 +412,7 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 			deadStrips[ChPos][VfatPos]++;
 		}
 	}
-	else cout << "Error opening file: " << deadStripsTable << endl;
+	else cout << "Error opening file: " << deadStripsFileName << endl;
 
 	// Results for the 30 chambers
 
@@ -666,6 +678,18 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 		Canvas->SaveAs(namename.c_str());
 		Canvas->Clear();
 	}
+
+	namename = "Efficiency_Per_Chamber_run_" + to_string(run);
+	EffPerCh->SetTitle(namename.c_str());
+	EffPerCh->GetXaxis()->SetTitle("Chamber number");
+	EffPerCh->GetYaxis()->SetTitle("Efficiency");
+	EffPerCh->GetYaxis()->SetRangeUser(min_eff,max_eff);
+	EffPerCh->SetMarkerStyle(20);
+	EffPerCh->Draw();
+	EffPerCh->Write(namename.c_str());
+	namename = "Efficiency_Per_Chamber_run_" + to_string(run) + ".png";
+	Canvas->SaveAs(namename.c_str());
+	Canvas->Clear();
 
 	standConfigFile.close();
 	infile->Close();
