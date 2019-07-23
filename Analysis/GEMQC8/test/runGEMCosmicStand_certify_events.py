@@ -165,13 +165,20 @@ process.muonGEMDigis.InputLabel = cms.InputTag("source","gemLocalModeDataSource"
 process.muonGEMDigis.useDBEMap = True
 process.muonGEMDigis.unPackStatusDigis = True
 
+# Getting hot and dead strips files
+hotStripsFile = "Analysis/GEMQC8/data/HotStripsTables/Mask_HotStrips_run" + str(run_number) + ".dat"
+deadStripsFile = "Analysis/GEMQC8/data/DeadStripsTables/Mask_DeadStrips_run" + str(run_number) + ".dat"
+
 # digi to reco
 process.load('RecoLocalMuon.GEMRecHit.gemRecHits_cfi')
 
 process.gemRecHits = cms.EDProducer("GEMRecHitProducer",
                                     recAlgoConfig = cms.PSet(),
                                     recAlgo = cms.string('GEMRecHitStandardAlgo'),
-                                    gemDigiLabel = cms.InputTag("muonGEMDigis")
+                                    gemDigiLabel = cms.InputTag("muonGEMDigis"),
+                                    maskFile = cms.FileInPath(hotStripsFile),
+                                    deadFile = cms.FileInPath(deadStripsFile),
+                                    applyMasking = cms.bool(True)
                                     )
 
 process.load('RecoMuon.TrackingTools.MuonServiceProxy_cff')
