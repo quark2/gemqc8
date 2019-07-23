@@ -21,7 +21,7 @@
 
 using namespace std;
 
-void macro_validation(int run, string configDir, string startDateTimeRun)
+void macro_validation(int run, string dataDir, string startDateTimeRun)
 {
 	// Setting variables for min and max displayed efficiency (to be tuned in the analysis if things go wrong...)
 	const float min_eff = 0.0;
@@ -243,7 +243,7 @@ void macro_validation(int run, string configDir, string startDateTimeRun)
 
 	// Open stand configuration file for present run & get names + positions of chambers
 
-	string configName = configDir + "StandGeometryConfiguration_run" + to_string(run) + ".csv";
+	string configName = dataDir + "StandConfigurationTables/StandGeometryConfiguration_run" + to_string(run) + ".csv";
 	ifstream standConfigFile (configName);
 
 	string line, split, comma = ",", slash = "/";
@@ -344,6 +344,64 @@ void macro_validation(int run, string configDir, string startDateTimeRun)
 
 	endDateTimeRun = to_string(year) + "-" + string(2-to_string(month).length(),'0').append(to_string(month)) + "-" + string(2-to_string(day).length(),'0').append(to_string(day)) + " " + string(2-to_string(hour).length(),'0').append(to_string(hour)) + ":" + string(2-to_string(minutes).length(),'0').append(to_string(minutes));
 
+	// Check of file of dead strips to add number to the DB HotStripsTables
+
+	string deadStripsTable = dataDir + "DeadStripsTables/DeadStrips_run" + to_string(run) + ".csv";
+	ifstream standConfigFile (configName);
+
+	string line, split, comma = ",", slash = "/";
+	int ChPos = 0, VfatPos = 0;
+	size_t pos = 0;
+	int deadStrips[30][24];
+
+	for (ch = 0; ch < 30; ch++)
+	{
+		for (vfat = 24; vfat < 24; vfat++)
+		{
+			deadStrips[ch][vfat] = 0;
+		}
+	}
+
+	CH_SERIAL_NUMBER,GEM_NUMBER,POSITION,VFAT,CHANNEL,STRIP,RUN_NUMBER
+
+	if (deadStripsTable.is_open())
+	{
+		while (getline(deadStripsTable, line))
+		{
+			pos = line.find(comma);
+			split = line.substr(0, pos);
+			if (split == "CH_SERIAL_NUMBER") continue;
+			line.erase(0, pos + comma.length());
+
+			pos = line.find(comma);
+			line.erase(0, pos + comma.length());
+
+			pos = line.find(slash);
+			split = line.substr(0, pos);
+			ChPos = (stoi(split)-1)*2; // (Row-1)*2
+			line.erase(0, pos + slash.length());
+
+			pos = line.find(slash);
+			split = line.substr(0, pos);
+			ChPos += (stoi(split)-1)*10; // (Row-1)*2 + (Col-1)*10
+			line.erase(0, pos + slash.length());
+
+			pos = line.find(comma);
+			split = line.substr(0, pos);
+			if (split == "B") ChPos += 0; // (Row-1)*2 + (Col-1)*10 + 0
+			if (split == "T") ChPos += 1; // (Row-1)*2 + (Col-1)*10 + 1
+			line.erase(0, pos + comma.length());
+
+			pos = line.find(comma);
+			split = line.substr(0, pos);
+			VfatPos = stoi(split); // (Row-1)*2
+			line.erase(0, pos + slash.length());
+
+			deadStrips[ChPos][VfatPos]++;
+		}
+	}
+	else cout << "Error opening file: " << deadStripsTable << endl;
+
 	// Results for the 30 chambers
 
 	TCanvas *Canvas = new TCanvas("Canvas","Canvas",0,0,1000,800);
@@ -428,7 +486,7 @@ void macro_validation(int run, string configDir, string startDateTimeRun)
 			int eta_partition = 7 - (vfat % 8);
 			double cls_mean = assocHitsClusterSize1D[c][eta_partition]->GetMean();
 			double cls_sigma = assocHitsClusterSize1D[c][eta_partition]->GetStdDev();
-			entry = to_string(vfat) + "," + to_string(eff_value) + "," + to_string(error_value) + "," + to_string(cls_mean) + "," + to_string(cls_sigma) + ",0" + "\n";
+			entry = to_string(vfat) + "," + to_string(eff_value) + "," + to_string(error_value) + "," + to_string(cls_mean) + "," + to_string(cls_sigma) + "," + to_string(deadStrips[c][vfat]) + "\n";
 			outfile << entry;
 		}
 		outfile.close();
