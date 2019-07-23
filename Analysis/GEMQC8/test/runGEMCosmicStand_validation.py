@@ -111,6 +111,16 @@ process.source = cms.Source("GEMLocalModeDataSource",
                             hasFerolHeader = cms.untracked.bool(False),
                             runNumber = cms.untracked.int32(run_number),
                             )
+                            
+"""
+process.source = cms.Source("GEMLocalModeDataSource",
+                            fileNames = cms.untracked.vstring ([fpath+x for x in os.listdir(fpath) if x.endswith(".raw")]),
+                            skipEvents=cms.untracked.uint32(0),
+                            fedId = cms.untracked.int32(888),  # which fedID to assign
+                            hasFerolHeader = cms.untracked.bool(True),
+                            runNumber = cms.untracked.int32(run_number),
+                            )
+"""
 
 process.options = cms.untracked.PSet(SkipEvent = cms.untracked.vstring('ProductNotFound')
                                      )
