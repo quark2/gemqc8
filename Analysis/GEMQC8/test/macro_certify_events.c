@@ -198,12 +198,12 @@ void macro_certify_events(int run, string configDir)
 
     for (binBegin = 0; binBegin < 12000; binBegin++)
     {
-      if (NrecHitsPerChVsEvt[c]->GetBinContent(binBegin+1) < 4)
+      if (NrecHitsPerChVsEvt[c]->GetBinContent(binBegin+1) < 150)
       {
         cout << "Bad event: binBegin!" << endl;
         for (binEnd = (binBegin+1); binEnd < 12000; binEnd++)
         {
-          if (NrecHitsPerChVsEvt[c]->GetBinContent(binEnd+1) > 4)
+          if (NrecHitsPerChVsEvt[c]->GetBinContent(binEnd+1) > 150)
           {
             cout << "Bad event: binEnd!" << endl;
             break;
