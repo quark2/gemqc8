@@ -10,7 +10,7 @@ def cmsRunner(split):
   running = subprocess.Popen(runCommand.split(),stdout=subprocess.PIPE,universal_newlines=True,cwd=runPath)
   while running.poll() is None:
     line = running.stdout.readline()
-#    print(line)
+    print(line)
   print running.stdout.read()
   running.communicate()
   time.sleep(1)
