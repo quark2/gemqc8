@@ -4,6 +4,7 @@
 #include <TEfficiency.h>
 #include <TFile.h>
 #include <TTree.h>
+#include "TGraphErrors.h"
 #include "TGraphAsymmErrors.h"
 #include <TBranch.h>
 #include <TCanvas.h>
@@ -78,7 +79,7 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 		eff1D[ch]->Divide(num1D[ch],denom1D[ch]);
 	}
 
-	// Getting average efficiency per chamber
+	// Getting efficiency per chamber
 
 	TH1D *NumPerCh = new TH1D(name,"",30,-0.5,29.5);
 	TH1D *DenomPerCh = new TH1D(name,"",30,-0.5,29.5);
@@ -370,7 +371,7 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 
 	for (int ch = 0; ch < 30; ch++)
 	{
-		for (int vfat = 24; vfat < 24; vfat++)
+		for (int vfat = 0; vfat < 24; vfat++)
 		{
 			deadStrips[ch][vfat] = 0;
 		}
@@ -420,6 +421,18 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 	TF1 *target97 = new TF1("target97","0.97",0,24);
 	target97->SetLineColor(kBlue);
 
+	double chamberNumber[30];
+	double horizontalBarPoint[30];
+	double efficiencyPerChamber[30];
+	double errorEfficiencyPerCh[30];
+
+	for (int ch=0; ch<30; ch++)
+	{
+		chamberNumber[ch] = double(ch);
+		horizontalBarPoint[ch] = 0.5;
+		efficiencyPerChamber[ch] = errorEfficiencyPerCh[ch] = 0;
+	}
+
 	ofstream outfile;
 
 	for (unsigned int i=0; i<chamberPos.size(); i++)
@@ -459,6 +472,10 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 		eff1D[c]->SetMarkerStyle(20);
 		eff1D[c]->Draw();
 		eff1D[c]->Write(namename.c_str());
+		TF1 *avgEffFit = new TF1("avgEffFit","pol0",0,24);
+		eff1D[c]->Fit(avgEffFit,"NOQ");
+		efficiencyPerChamber[c] = avgEffFit->GetParameter(0);
+		errorEfficiencyPerCh[c] = avgEffFit->GetParError(0);;
 		target97->Draw("SAME");
 		namename = "outPlots_Chamber_Pos_" + to_string(chamberPos[i]) + "/Efficiency_Ch_Pos_" + to_string(chamberPos[i]) + ".png";
 		Canvas->SaveAs(namename.c_str());
@@ -498,7 +515,7 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 			int eta_partition = 7 - (vfat % 8);
 			double cls_mean = assocHitsClusterSize1D[c][eta_partition]->GetMean();
 			double cls_sigma = assocHitsClusterSize1D[c][eta_partition]->GetStdDev();
-			entry = to_string(vfat) + "," + to_string(eff_value) + "," + to_string(error_value) + "," + to_string(cls_mean) + "," + to_string(cls_sigma) + "," + to_string(deadStrips[c][vfat]) + "\n";
+			entry = to_string(vfat) + "," + to_string(eff_value) + "," + to_string(error_value) + "," + to_string(cls_mean) + "," + to_string(cls_sigma) + "," + to_string(deadStrips[c][vfat]/128.0*100.0) + "\n";
 			outfile << entry;
 		}
 		outfile.close();
@@ -709,6 +726,21 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 	EffPerCh->Draw();
 	EffPerCh->Write(namename.c_str());
 	namename = "Efficiency_Per_Chamber_run_" + to_string(run) + ".png";
+	Canvas->SaveAs(namename.c_str());
+	Canvas->Clear();
+
+	// Getting average efficiency per chamber (fit tecnique)
+	TGraphErrors *AvgEffPerCh = new TGraphErrors(30,chamberNumber,efficiencyPerChamber,horizontalBarPoint,errorEfficiencyPerCh);
+
+	namename = "Average_Efficiency_Per_Chamber_run_" + to_string(run);
+	AvgEffPerCh->SetTitle(namename.c_str());
+	AvgEffPerCh->GetXaxis()->SetTitle("Chamber number");
+	AvgEffPerCh->GetYaxis()->SetTitle("Efficiency");
+	AvgEffPerCh->GetYaxis()->SetRangeUser(min_eff,max_eff);
+	AvgEffPerCh->SetMarkerStyle(20);
+	AvgEffPerCh->Draw();
+	AvgEffPerCh->Write(namename.c_str());
+	namename = "Average_Efficiency_Per_Chamber_run_" + to_string(run) + ".png";
 	Canvas->SaveAs(namename.c_str());
 	Canvas->Clear();
 
