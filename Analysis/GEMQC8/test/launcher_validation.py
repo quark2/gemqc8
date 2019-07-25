@@ -41,8 +41,10 @@ if __name__ == '__main__':
     # Retrieve start date and time of the run
     fpath =  "/eos/cms/store/group/dpg_gem/comm_gem/QC8_Commissioning/run{:06d}/".format(int(run_number))
     for x in os.listdir(fpath):
-         if x.endswith("000000.dat"):
-             file0name = x
+        if x.endswith("chunk_000000.dat"):
+            file0name = x
+        if x.endswith("ls0001_index000000.raw"):
+            file0name = x
     startDateTime = file0name.split('_')[3] + "_" + file0name.split('_')[4]
     time.sleep(1)
 
