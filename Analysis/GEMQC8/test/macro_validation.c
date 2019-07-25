@@ -679,7 +679,26 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 		Canvas->Clear();
 	}
 
-	// Plot efficiency per chamber
+	// Plot num, denom, efficiency per chamber
+	namename = "Numerator_Per_Chamber_run_" + to_string(run);
+	NumPerCh->SetTitle(namename.c_str());
+	NumPerCh->GetXaxis()->SetTitle("Chamber number");
+	NumPerCh->GetYaxis()->SetTitle("Counts");
+	NumPerCh->Draw();
+	NumPerCh->Write(namename.c_str());
+	namename = "Numerator_Per_Chamber_run_" + to_string(run) + ".png";
+	Canvas->SaveAs(namename.c_str());
+	Canvas->Clear();
+
+	namename = "Denominator_Per_Chamber_run_" + to_string(run);
+	DenomPerCh->SetTitle(namename.c_str());
+	DenomPerCh->GetXaxis()->SetTitle("Chamber number");
+	DenomPerCh->GetYaxis()->SetTitle("Counts");
+	DenomPerCh->Draw();
+	DenomPerCh->Write(namename.c_str());
+	namename = "Denominator_Per_Chamber_run_" + to_string(run) + ".png";
+	Canvas->SaveAs(namename.c_str());
+	Canvas->Clear();
 
 	namename = "Efficiency_Per_Chamber_run_" + to_string(run);
 	EffPerCh->SetTitle(namename.c_str());
