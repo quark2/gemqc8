@@ -193,17 +193,18 @@ void macro_certify_events(int run, string configDir)
 		Canvas->SaveAs(namename.c_str());
 
     // Here looking for events with tripped chamber
+    int limitRecHitHVtrip = 30;
     int binToEvt = 1000;
     int binBegin = 0, binEnd = 0;
 
     for (binBegin = 0; binBegin < 12000; binBegin++)
     {
-      if (NrecHitsPerChVsEvt[c]->GetBinContent(binBegin+1) < 150)
+      if (NrecHitsPerChVsEvt[c]->GetBinContent(binBegin+1) < limitRecHitHVtrip)
       {
         cout << "Bad event: binBegin!" << endl;
         for (binEnd = (binBegin+1); binEnd < 12000; binEnd++)
         {
-          if (NrecHitsPerChVsEvt[c]->GetBinContent(binEnd+1) > 150)
+          if (NrecHitsPerChVsEvt[c]->GetBinContent(binEnd+1) > limitRecHitHVtrip)
           {
             cout << "Bad event: binEnd!" << endl;
             break;

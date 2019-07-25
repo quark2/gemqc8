@@ -80,8 +80,8 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 
 	// Getting average efficiency per chamber
 
-	TH1D *NumPerCh = new TH1D(name,"",30,-0.5,23.5);
-	TH1D *DenomPerCh = new TH1D(name,"",30,-0.5,23.5);
+	TH1D *NumPerCh = new TH1D(name,"",30,-0.5,29.5);
+	TH1D *DenomPerCh = new TH1D(name,"",30,-0.5,29.5);
 	TGraphAsymmErrors *EffPerCh = new TGraphAsymmErrors;
 
 	for (int ch=0; ch<30; ch++)
@@ -678,6 +678,8 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 		Canvas->SaveAs(namename.c_str());
 		Canvas->Clear();
 	}
+
+	// Plot efficiency per chamber
 
 	namename = "Efficiency_Per_Chamber_run_" + to_string(run);
 	EffPerCh->SetTitle(namename.c_str());
