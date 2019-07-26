@@ -24,6 +24,8 @@ if __name__ == '__main__':
 
     import config_creator
     import geometry_files_creator
+    import converHotDeadStripsTables
+    import dbTableToHotDeadStripsTable
 
     # Conversion from excel to csv files
     if (xlsx_csv_conversion_flag == "xlsxTOcsv=ON"):
@@ -117,3 +119,11 @@ if __name__ == '__main__':
     movingToDir = subprocess.Popen(mvToDirCommand.split(),stdout=subprocess.PIPE,universal_newlines=True,cwd=runPath)
     movingToDir.communicate()
     time.sleep(1)
+
+    # Converting tables ToDB-like into FromDB-like
+    convertHotDead(run_number,"hot")
+    convertHotDead(run_number,"dead")
+
+    # Convert FromDB-Like tables into CMSSW-like tables
+    SwMappingHotDeadStrips(run_number,"hot")
+    SwMappingHotDeadStrips(run_number,"dead")
