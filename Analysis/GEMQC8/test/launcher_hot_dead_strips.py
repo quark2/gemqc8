@@ -24,7 +24,7 @@ if __name__ == '__main__':
 
     import config_creator
     import geometry_files_creator
-    import converHotDeadStripsTables
+    import convertHotDeadStripsTables
     import dbTableToHotDeadStripsTable
 
     # Conversion from excel to csv files
