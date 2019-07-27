@@ -9,6 +9,8 @@ if __name__ == '__main__':
 
     run_number = sys.argv[1]
 
+    alignmentDone = sys.argv[2]
+
     # Different paths definition
     srcPath = os.path.abspath("launcher_validation.py").split('QC8Test')[0]+'QC8Test/src/'
     pyhtonModulesPath = os.path.abspath("launcher_validation.py").split('QC8Test')[0]+'QC8Test/src/Analysis/GEMQC8/python/'
@@ -26,7 +28,7 @@ if __name__ == '__main__':
     time.sleep(1)
 
     # Generate geometry files
-    geometry_files_creator.geomMaker(run_number,"--yesAlignment")
+    geometry_files_creator.geomMaker(run_number,alignmentDone)
     time.sleep(1)
 
     # Retrieve start date and time of the run
