@@ -9,10 +9,11 @@ mv gemqc8/* .
 rm -rf gemqc8
 scram b -j 4
 cd Analysis/GEMQC8/test
-python launcher_hot_dead_strips.py 191 xlsxTOcsv=OFF
-python launcher_certify_events.py 191 xlsxTOcsv=OFF
-python launcher_fast_efficiency.py 191 xlsxTOcsv=OFF
-python launcher_validation.py 191 xlsxTOcsv=OFF
+python launcher_hot_dead_strips.py #run_number# xlsxTOcsv=OFF
+python launcher_certify_events.py #run_number# xlsxTOcsv=OFF
+python launcher_fast_efficiency.py #run_number# xlsxTOcsv=OFF
+python launcher_alignment.py #run_number# xlsxTOcsv=OFF
+python launcher_validation.py #run_number# xlsxTOcsv=OFF
 ```
 
 If you want to run simulations, download the package following these instructions:
@@ -26,6 +27,6 @@ rm -rf gemqc8
 rm -rf EventFilter
 scram b -j 4
 cd Analysis/GEMQC8/test
-python launcher_sim_fast_efficiency.py 1 xlsxTOcsv=OFF
-python launcher_sim.py 1 xlsxTOcsv=OFF
+python launcher_sim_fast_efficiency.py #run_number# xlsxTOcsv=OFF
+python launcher_sim.py #run_number# xlsxTOcsv=OFF
 ```
