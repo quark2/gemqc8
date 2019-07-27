@@ -121,9 +121,9 @@ if __name__ == '__main__':
     time.sleep(1)
 
     # Converting tables ToDB-like into FromDB-like
-    convertHotDead(run_number,"hot")
-    convertHotDead(run_number,"dead")
+    convertHotDeadStripsTables.convertHotDead(run_number,"hot")
+    convertHotDeadStripsTables.convertHotDead(run_number,"dead")
 
     # Convert FromDB-Like tables into CMSSW-like tables
-    SwMappingHotDeadStrips(run_number,"hot")
-    SwMappingHotDeadStrips(run_number,"dead")
+    dbTableToHotDeadStripsTable.SwMappingHotDeadStrips(run_number,"hot")
+    dbTableToHotDeadStripsTable.SwMappingHotDeadStrips(run_number,"dead")
