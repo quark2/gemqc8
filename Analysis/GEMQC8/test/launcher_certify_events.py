@@ -8,7 +8,6 @@ import time
 if __name__ == '__main__':
 
     run_number = sys.argv[1]
-    xlsx_csv_conversion_flag = sys.argv[2]
 
     # Different paths definition
     srcPath = os.path.abspath("launcher_certify_events.py").split('QC8Test')[0]+'QC8Test/src/'
@@ -23,14 +22,6 @@ if __name__ == '__main__':
 
     import config_creator
     import geometry_files_creator
-
-    # Conversion from excel to csv files
-    if (xlsx_csv_conversion_flag == "xlsxTOcsv=ON"):
-        import excel_to_csv
-        fileToBeConverted = configTablesPath + "StandGeometryConfiguration_run" + run_number + ".xlsx"
-        excel_to_csv.conversion(fileToBeConverted)
-        fileToBeConverted = alignmentTablesPath + "StandAlignmentValues_run" + run_number + ".xlsx"
-        excel_to_csv.conversion(fileToBeConverted)
 
     # Generate configuration file
     config_creator.configMaker(run_number)
