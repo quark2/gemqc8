@@ -20,16 +20,9 @@ if __name__ == '__main__':
 
     sys.path.insert(0,pyhtonModulesPath)
 
+    import dumpDBtables
     import config_creator
     import geometry_files_creator
-
-    # Generate configuration file
-    config_creator.configMaker(run_number)
-    time.sleep(1)
-
-    # Generate geometry files
-    geometry_files_creator.geomMaker(run_number,alignmentDone)
-    time.sleep(1)
 
     # Retrieve start date and time of the run
     fpath =  "/eos/cms/store/group/dpg_gem/comm_gem/QC8_Commissioning/run{:06d}/".format(int(run_number))
@@ -43,6 +36,17 @@ if __name__ == '__main__':
         else:
             print "Check the data files... First file (at least) is missing!"
     startDateTime = file0name.split('_')[3] + "_" + file0name.split('_')[4]
+    time.sleep(1)
+
+    # Get stand configuration table from the DB
+    dumpDBtables.getConfigurationTable(run_number,startDateTime)
+    
+    # Generate configuration file
+    config_creator.configMaker(run_number)
+    time.sleep(1)
+
+    # Generate geometry files
+    geometry_files_creator.geomMaker(run_number,alignmentDone)
     time.sleep(1)
 
     # Compiling after the generation of the geometry files
