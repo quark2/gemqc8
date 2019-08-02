@@ -39,7 +39,8 @@ if __name__ == '__main__':
     time.sleep(1)
 
     # Get stand configuration table from the DB
-    #dumpDBtables.getConfigurationTable(run_number,startDateTime)
+    if run_number >= 210:
+        dumpDBtables.getConfigurationTable(run_number,startDateTime)
 
     # Generate configuration file
     config_creator.configMaker(run_number)
