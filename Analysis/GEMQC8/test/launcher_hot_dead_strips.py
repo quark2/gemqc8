@@ -4,6 +4,7 @@ import sys
 import io
 import subprocess
 import time
+import datetime
 
 if __name__ == '__main__':
 
@@ -42,7 +43,7 @@ if __name__ == '__main__':
     time.sleep(1)
 
     # Get stand configuration table from the DB
-    dumpDBtables.getConfigurationTable(run_number,startDateTime)
+    #dumpDBtables.getConfigurationTable(run_number,startDateTime)
 
     # Generate configuration file
     config_creator.configMaker(run_number)
