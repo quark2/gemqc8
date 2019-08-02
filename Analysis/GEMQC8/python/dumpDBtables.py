@@ -1,5 +1,7 @@
 import cx_Oracle
 import os, sys, io
+import datetime
+import time
 
 def getConfigurationTable(run_num,runDateTime):
     print "\nDownloading ConfigurationTable for run {0}".format(run_num)
