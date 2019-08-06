@@ -439,6 +439,10 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 	{
 		int c = chamberPos[i];
 
+		// Check to have meaningful plots, to prevent crashes
+
+		if (denom1D[c]->Integral() == 0) continue;
+
 		// Plot num e denom per chamber
 
 		namename = "Denom_" + chamberName[i] + "_in_position_" + to_string(chamberPos[i]) + "_run_" + to_string(run);
