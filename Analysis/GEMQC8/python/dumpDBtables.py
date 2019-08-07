@@ -38,6 +38,7 @@ def getConfigurationTable(run_num,runDateTime):
 
     with open(outfile_name,"w+") as outfile:
         line = "CH_SERIAL_NUMBER,GEM_NUM,POSITION,CH_TYPE,FLIP,AMC,OH,FLOW_METER,RUN_NUMBER\n"
+        print line
         outfile.write(line)
         for result in cur:
             chamber_name = result[0]
@@ -52,7 +53,8 @@ def getConfigurationTable(run_num,runDateTime):
             run_number   = run_num
             if (time == goodDateTimeForQuery):
             	line = str(chamber_name) + "," + str(gem_num) + "," + str(position) + "," + str(ch_type) + "," + str(flip) + "," + str(amc) + "," + str(oh) + "," + str(flow_meter) + "," + str(run_number) + "\n"
-            	outfile.write(line)
+                print line
+                outfile.write(line)
 
     print "\nSuccesfully done!\n"
 
