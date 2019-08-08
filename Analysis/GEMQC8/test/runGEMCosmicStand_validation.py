@@ -27,6 +27,16 @@ options.register("inputPath","",
                  VarParsing.VarParsing.varType.string,
                  "Path of input raw file(s)")
 
+options.register("inputMultiFiles","",
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 "Path of input raw file(s)")
+
+options.register("prevDQMRootFile","",
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 "Path of input raw file(s)")
+
 options.register("eventsPerJob",-1,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
@@ -111,12 +121,22 @@ process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(options.event
 run_number = options.runNum
 fpath = "/eos/cms/store/group/dpg_gem/comm_gem/QC8_Commissioning/run%06i"%(run_number)
 if options.inputPath != "": fpath = options.inputPath
+fpath = '/data/bigdisk/GEM-Data-Taking/GE11_QC8/Cosmics/'
 
 # Input source
-print os.listdir(fpath)
-print ["file:" + os.path.join(fpath, x) for x in os.listdir(fpath) if x.endswith(".dat")]
+listSrc = []
+
+if options.inputMultiFiles == "": 
+  listSrcName = [ s for s in os.listdir(fpath) if s.endswith(".dat") and s.startswith("run%06i"%run_number) ]
+  listSrcName = listSrcName[ 0:1 ]
+  listSrc = [ "file:" + os.path.join(fpath, s) for s in listSrcName ]
+else: 
+  listSrc = [ s for s in options.inputMultiFiles.split(",") if s != "" ]
+
+#print(listSrcName)
+
 process.source = cms.Source("GEMLocalModeDataSource",
-                            fileNames = cms.untracked.vstring (["file:" + os.path.join(fpath, x) for x in os.listdir(fpath) if x.endswith(".dat")]),
+                            fileNames = cms.untracked.vstring(listSrc),
                             skipEvents=cms.untracked.uint32(0),
                             fedId = cms.untracked.int32(888),  # which fedID to assign
                             hasFerolHeader = cms.untracked.bool(False),
@@ -265,12 +285,15 @@ process.GEMDQMSource.recHitsInputLabel = cms.InputTag("gemRecHits")
 
 process.GEMDQMStatusDigi.perSuperchamber = cms.bool(False)
 
+strPrevFile = "DQM_V0001_GEM_R%09i.root"%(run_number + 20000)
+if options.prevDQMRootFile != "": strPrevFile = options.prevDQMRootFile
+process.GEMDQMStatusDigi.pathOfPrevDQMRoot = strPrevFile
+
 # Path and EndPath definitions
 process.rawTOhits_step = cms.Path(process.muonGEMDigis+process.gemRecHits)
 process.reconstruction_step = cms.Path(process.GEMCosmicMuonForQC8)
 process.validation_step = cms.Path(process.ValidationQC8+process.GEMDQM)
-process.endjob_step = cms.EndPath(process.endOfProcess)
-process.output_step = cms.EndPath(process.output+process.dqmEnv+process.dqmSaver)
+process.endjob_step = cms.EndPath(process.endOfProcess+process.dqmEnv+process.dqmSaver)
 
 process.MEtoEDMConverter.deleteAfterCopy = cms.untracked.bool(False)
 

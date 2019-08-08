@@ -35,6 +35,8 @@ options.register('mps',
 
 options.parseArguments()
 
+srcPath = os.path.join(os.environ[ "CMSSW_BASE" ], "src")
+
 # The superchambers in the 15 slots
 SuperChType = runConfig.StandConfiguration
 
@@ -105,6 +107,7 @@ fpath =  "/eos/cms/store/group/dpg_gem/comm_gem/QC8_Commissioning/run"
 for i in range(6-len(str(run_number))):
     fpath = fpath + '0'
 fpath = fpath + str(run_number) + "/"
+fpath = '/data/bigdisk/GEM-Data-Taking/GE11_QC8/Cosmics/'
 
 # Input source
 process.source = cms.Source("GEMLocalModeDataSource",
@@ -167,7 +170,7 @@ process.gemRecHits = cms.EDProducer("GEMRecHitProducer",
 process.load('RecoMuon.TrackingTools.MuonServiceProxy_cff')
 
 # Fast Efficiency - Get certified events from file
-pyhtonModulesPath = os.path.abspath("runGEMCosmicStand_fast_efficiency.py").split('QC8Test')[0]+'QC8Test/src/Analysis/GEMQC8/python/'
+pyhtonModulesPath = os.path.join(srcPath, "Analysis/GEMQC8/python/")
 sys.path.insert(1,pyhtonModulesPath)
 from readCertEvtsFromFile import GetCertifiedEvents
 certEvts = GetCertifiedEvents(run_number)

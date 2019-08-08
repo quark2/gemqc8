@@ -252,7 +252,7 @@ void GEMCosmicMuonForQC8::produce(edm::Event& ev, const edm::EventSetup& setup)
       }
     }
     if (muRecHits.size() < minRecHitsPerTrack) continue;
-    if (TCN < (int)minRecHitsPerTrack) continue;
+    if (TCN < minRecHitsPerTrack) continue;
 
     vector<TrajectorySeed> trajSeedsBody;
     std::vector<TrajectorySeed> *trajSeeds = &trajSeedsBody;
