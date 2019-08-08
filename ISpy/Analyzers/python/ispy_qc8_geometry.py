@@ -3,8 +3,8 @@ import FWCore.ParameterSet.Config as cms
 sys.path.append(os.getenv('CMSSW_BASE')+'/src/Analysis/GEMQC8/test')
 import configureRun_cfi as runConfig
 
-run_number = 127
-SuperChType = ['0','0','0','0','0',\
+run_number = 200
+SuperChType = ['S','S','S','0','S',\
                'S','S','S','S','S',\
                '0','0','0','0','0']
 

@@ -4,6 +4,7 @@
 #include <TEfficiency.h>
 #include <TFile.h>
 #include <TTree.h>
+#include "TGraphErrors.h"
 #include "TGraphAsymmErrors.h"
 #include <TBranch.h>
 #include <TCanvas.h>
@@ -21,7 +22,7 @@
 
 using namespace std;
 
-void macro_validation(int run, string configDir, string startDateTimeRun)
+void macro_validation(int run, string dataDir, string startDateTimeRun)
 {
 	// Setting variables for min and max displayed efficiency (to be tuned in the analysis if things go wrong...)
 	const float min_eff = 0.0;
@@ -77,6 +78,20 @@ void macro_validation(int run, string configDir, string startDateTimeRun)
 		}
 		eff1D[ch]->Divide(num1D[ch],denom1D[ch]);
 	}
+
+	// Getting efficiency per chamber
+
+	TH1D *NumPerCh = new TH1D(name,"",30,-0.5,29.5);
+	TH1D *DenomPerCh = new TH1D(name,"",30,-0.5,29.5);
+	TGraphAsymmErrors *EffPerCh = new TGraphAsymmErrors;
+
+	for (int ch=0; ch<30; ch++)
+	{
+		NumPerCh->SetBinContent(ch+1,num1D[ch]->Integral());
+		DenomPerCh->SetBinContent(ch+1,denom1D[ch]->Integral());
+	}
+
+	EffPerCh->Divide(NumPerCh,DenomPerCh);
 
 	// Generating 2D histograms for the 5*2 rows
 
@@ -243,7 +258,7 @@ void macro_validation(int run, string configDir, string startDateTimeRun)
 
 	// Open stand configuration file for present run & get names + positions of chambers
 
-	string configName = configDir + "StandGeometryConfiguration_run" + to_string(run) + ".csv";
+	string configName = dataDir + "StandConfigurationTables/StandGeometryConfiguration_run" + to_string(run) + ".csv";
 	ifstream standConfigFile (configName);
 
 	string line, split, comma = ",", slash = "/";
@@ -306,10 +321,11 @@ void macro_validation(int run, string configDir, string startDateTimeRun)
 	delimiter = "_";
 	int day = stoi(endDateTimeRun.substr(0, endDateTimeRun.find(delimiter)));
 	endDateTimeRun.erase(0, endDateTimeRun.find(delimiter) + delimiter.length());
-	delimiter = ":";
+	delimiter = "-";
 	int hour = stoi(endDateTimeRun.substr(0, endDateTimeRun.find(delimiter)));
 	endDateTimeRun.erase(0, endDateTimeRun.find(delimiter) + delimiter.length());
-	int minutes = stoi(endDateTimeRun);
+	delimiter = "-";
+	int minutes = stoi(endDateTimeRun.substr(0, endDateTimeRun.find(delimiter)));
 
 	startDateTimeRun = to_string(year) + "-" + string(2-to_string(month).length(),'0').append(to_string(month)) + "-" + string(2-to_string(day).length(),'0').append(to_string(day)) + " " + string(2-to_string(hour).length(),'0').append(to_string(hour)) + ":" + string(2-to_string(minutes).length(),'0').append(to_string(minutes));
 
@@ -343,17 +359,89 @@ void macro_validation(int run, string configDir, string startDateTimeRun)
 
 	endDateTimeRun = to_string(year) + "-" + string(2-to_string(month).length(),'0').append(to_string(month)) + "-" + string(2-to_string(day).length(),'0').append(to_string(day)) + " " + string(2-to_string(hour).length(),'0').append(to_string(hour)) + ":" + string(2-to_string(minutes).length(),'0').append(to_string(minutes));
 
+	// Check of file of dead strips to add number to the DB HotStripsTables
+
+	string deadStripsFileName = dataDir + "DeadStripsTables/DeadStrips_run" + to_string(run) + ".csv";
+	ifstream deadStripsTable (deadStripsFileName);
+
+	ChPos = 0;
+	int VfatPos = 0;
+	pos = 0;
+	int deadStrips[30][24];
+
+	for (int ch = 0; ch < 30; ch++)
+	{
+		for (int vfat = 0; vfat < 24; vfat++)
+		{
+			deadStrips[ch][vfat] = 0;
+		}
+	}
+
+	if (deadStripsTable.is_open())
+	{
+		while (getline(deadStripsTable, line))
+		{
+			pos = line.find(comma);
+			split = line.substr(0, pos);
+			if (split == "CH_SERIAL_NUMBER") continue;
+			line.erase(0, pos + comma.length());
+
+			pos = line.find(comma);
+			line.erase(0, pos + comma.length());
+
+			pos = line.find(slash);
+			split = line.substr(0, pos);
+			ChPos = (stoi(split)-1)*2; // (Row-1)*2
+			line.erase(0, pos + slash.length());
+
+			pos = line.find(slash);
+			split = line.substr(0, pos);
+			ChPos += (stoi(split)-1)*10; // (Row-1)*2 + (Col-1)*10
+			line.erase(0, pos + slash.length());
+
+			pos = line.find(comma);
+			split = line.substr(0, pos);
+			if (split == "B") ChPos += 0; // (Row-1)*2 + (Col-1)*10 + 0
+			if (split == "T") ChPos += 1; // (Row-1)*2 + (Col-1)*10 + 1
+			line.erase(0, pos + comma.length());
+
+			pos = line.find(comma);
+			split = line.substr(0, pos);
+			VfatPos = stoi(split); // (Row-1)*2
+			line.erase(0, pos + slash.length());
+
+			deadStrips[ChPos][VfatPos]++;
+		}
+	}
+	else cout << "Error opening file: " << deadStripsFileName << endl;
+
 	// Results for the 30 chambers
 
 	TCanvas *Canvas = new TCanvas("Canvas","Canvas",0,0,1000,800);
 	TF1 *target97 = new TF1("target97","0.97",0,24);
 	target97->SetLineColor(kBlue);
 
+	double chamberNumber[30];
+	double horizontalBarPoint[30];
+	double efficiencyPerChamber[30];
+	double errorEfficiencyPerCh[30];
+
+	for (int ch=0; ch<30; ch++)
+	{
+		chamberNumber[ch] = double(ch);
+		horizontalBarPoint[ch] = 0.5;
+		efficiencyPerChamber[ch] = errorEfficiencyPerCh[ch] = 0;
+	}
+
 	ofstream outfile;
 
 	for (unsigned int i=0; i<chamberPos.size(); i++)
 	{
 		int c = chamberPos[i];
+
+		// Check to have meaningful plots, to prevent crashes
+
+		if (denom1D[c]->Integral() == 0) continue;
 
 		// Plot num e denom per chamber
 
@@ -388,6 +476,10 @@ void macro_validation(int run, string configDir, string startDateTimeRun)
 		eff1D[c]->SetMarkerStyle(20);
 		eff1D[c]->Draw();
 		eff1D[c]->Write(namename.c_str());
+		TF1 *avgEffFit = new TF1("avgEffFit","pol0",0,24);
+		eff1D[c]->Fit(avgEffFit,"NOQ");
+		efficiencyPerChamber[c] = avgEffFit->GetParameter(0);
+		errorEfficiencyPerCh[c] = avgEffFit->GetParError(0);;
 		target97->Draw("SAME");
 		namename = "outPlots_Chamber_Pos_" + to_string(chamberPos[i]) + "/Efficiency_Ch_Pos_" + to_string(chamberPos[i]) + ".png";
 		Canvas->SaveAs(namename.c_str());
@@ -425,9 +517,9 @@ void macro_validation(int run, string configDir, string startDateTimeRun)
 			eff_value = eff1D[c]->GetY()[pointIndex];
 			error_value = (eff1D[c]->GetEYhigh()[pointIndex] + eff1D[c]->GetEYlow()[pointIndex]) / 2.0;
 			int eta_partition = 7 - (vfat % 8);
-			double cls_mean = clusterSize1D[c][eta_partition]->GetMean();
-			double cls_sigma = clusterSize1D[c][eta_partition]->GetStdDev();
-			entry = to_string(vfat) + "," + to_string(eff_value) + "," + to_string(error_value) + "," + to_string(cls_mean) + "," + to_string(cls_sigma) + "\n"; // here we have to insert the values of percent_masked
+			double cls_mean = assocHitsClusterSize1D[c][eta_partition]->GetMean();
+			double cls_sigma = assocHitsClusterSize1D[c][eta_partition]->GetStdDev();
+			entry = to_string(vfat) + "," + to_string(eff_value) + "," + to_string(error_value) + "," + to_string(cls_mean) + "," + to_string(cls_sigma) + "," + to_string(deadStrips[c][vfat]/128.0*100.0) + "\n";
 			outfile << entry;
 		}
 		outfile.close();
@@ -607,6 +699,54 @@ void macro_validation(int run, string configDir, string startDateTimeRun)
 		Canvas->SaveAs(namename.c_str());
 		Canvas->Clear();
 	}
+
+	// Plot num, denom, efficiency per chamber
+	namename = "Numerator_Per_Chamber_run_" + to_string(run);
+	NumPerCh->SetTitle(namename.c_str());
+	NumPerCh->GetXaxis()->SetTitle("Chamber number");
+	NumPerCh->GetYaxis()->SetTitle("Counts");
+	NumPerCh->Draw();
+	NumPerCh->Write(namename.c_str());
+	namename = "Numerator_Per_Chamber_run_" + to_string(run) + ".png";
+	Canvas->SaveAs(namename.c_str());
+	Canvas->Clear();
+
+	namename = "Denominator_Per_Chamber_run_" + to_string(run);
+	DenomPerCh->SetTitle(namename.c_str());
+	DenomPerCh->GetXaxis()->SetTitle("Chamber number");
+	DenomPerCh->GetYaxis()->SetTitle("Counts");
+	DenomPerCh->Draw();
+	DenomPerCh->Write(namename.c_str());
+	namename = "Denominator_Per_Chamber_run_" + to_string(run) + ".png";
+	Canvas->SaveAs(namename.c_str());
+	Canvas->Clear();
+
+	namename = "Efficiency_Per_Chamber_run_" + to_string(run);
+	EffPerCh->SetTitle(namename.c_str());
+	EffPerCh->GetXaxis()->SetTitle("Chamber number");
+	EffPerCh->GetYaxis()->SetTitle("Efficiency");
+	EffPerCh->GetYaxis()->SetRangeUser(min_eff,max_eff);
+	EffPerCh->SetMarkerStyle(20);
+	EffPerCh->Draw();
+	EffPerCh->Write(namename.c_str());
+	namename = "Efficiency_Per_Chamber_run_" + to_string(run) + ".png";
+	Canvas->SaveAs(namename.c_str());
+	Canvas->Clear();
+
+	// Getting average efficiency per chamber (fit tecnique)
+	TGraphErrors *AvgEffPerCh = new TGraphErrors(30,chamberNumber,efficiencyPerChamber,horizontalBarPoint,errorEfficiencyPerCh);
+
+	namename = "Average_Efficiency_Per_Chamber_run_" + to_string(run);
+	AvgEffPerCh->SetTitle(namename.c_str());
+	AvgEffPerCh->GetXaxis()->SetTitle("Chamber number");
+	AvgEffPerCh->GetYaxis()->SetTitle("Efficiency");
+	AvgEffPerCh->GetYaxis()->SetRangeUser(min_eff,max_eff);
+	AvgEffPerCh->SetMarkerStyle(20);
+	AvgEffPerCh->Draw();
+	AvgEffPerCh->Write(namename.c_str());
+	namename = "Average_Efficiency_Per_Chamber_run_" + to_string(run) + ".png";
+	Canvas->SaveAs(namename.c_str());
+	Canvas->Clear();
 
 	standConfigFile.close();
 	infile->Close();

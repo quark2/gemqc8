@@ -4,32 +4,23 @@ import sys
 import io
 import subprocess
 import time
+import datetime
 
 if __name__ == '__main__':
 
     run_number = sys.argv[1]
-    xlsx_csv_conversion_flag = sys.argv[2]
 
     # Different paths definition
     srcPath = os.path.abspath("launcher_sim.py").split('QC8Test')[0]+'QC8Test/src/'
     pyhtonModulesPath = os.path.abspath("launcher_sim.py").split('QC8Test')[0]+'QC8Test/src/Analysis/GEMQC8/python/'
     runPath = os.path.abspath("launcher_sim.py").split('QC8Test')[0] + 'QC8Test/src/Analysis/GEMQC8/test/'
-    configTablesPath = os.path.abspath("launcher_sim.py").split('QC8Test')[0] + 'QC8Test/src/Analysis/GEMQC8/data/StandConfigurationTables/'
-    alignmentTablesPath = os.path.abspath("launcher_sim.py").split('QC8Test')[0] + 'QC8Test/src/Analysis/GEMQC8/data/StandAligmentTables/'
+    dataPath = os.path.abspath("launcher_validation.py").split('QC8Test')[0] + 'QC8Test/src/Analysis/GEMQC8/data/'
     resDirPath = os.path.abspath("launcher_sim.py").split('QC8Test')[0]
 
     sys.path.insert(0,pyhtonModulesPath)
 
     import config_creator
     import geometry_files_creator
-
-    # Conversion from excel to csv files
-    if (xlsx_csv_conversion_flag == "xlsxTOcsv=ON"):
-        import excel_to_csv
-        fileToBeConverted = configTablesPath + "StandGeometryConfiguration_run" + run_number + ".xlsx"
-        excel_to_csv.conversion(fileToBeConverted)
-        fileToBeConverted = alignmentTablesPath + "StandAlignmentValues_run" + run_number + ".xlsx"
-        excel_to_csv.conversion(fileToBeConverted)
 
     # Generate configuration file
     config_creator.configMaker(run_number)
@@ -95,7 +86,8 @@ if __name__ == '__main__':
     time.sleep(1)
 
     # Efficiency computation & output
-    effCommand = "root -l -q " + runPath + "macro_validation.c(" + run_number + ",\"" + configTablesPath + "\")"
+    startDateTime = "2019-03-14_09-04-00"
+    effCommand = "root -l -q " + runPath + "macro_validation.c(" + run_number + ",\"" + dataPath + "\",\"" + startDateTime + "\")"
     efficiency = subprocess.Popen(effCommand.split(),stdout=subprocess.PIPE,universal_newlines=True,cwd=effoutDir)
     while efficiency.poll() is None:
         line = efficiency.stdout.readline()

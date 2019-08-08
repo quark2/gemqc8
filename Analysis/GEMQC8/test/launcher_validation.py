@@ -4,48 +4,53 @@ import sys
 import io
 import subprocess
 import time
+import datetime
 
 if __name__ == '__main__':
 
     run_number = sys.argv[1]
-    xlsx_csv_conversion_flag = sys.argv[2]
-    userDB_add = sys.argv[3]
+
+    alignmentDone = sys.argv[2]
 
     # Different paths definition
     srcPath = os.path.join(os.environ[ "CMSSW_BASE" ], "src")
     pyhtonModulesPath = os.path.join(srcPath, "Analysis/GEMQC8/python/")
     runPath = os.path.join(srcPath, "Analysis/GEMQC8/test/")
+    dataPath = os.path.join(srcPath, "Analysis/GEMQC8/data/")
+    resDirPath = os.path.join(os.environ[ "CMSSW_BASE" ], "../")
     configTablesPath = os.path.join(srcPath, "Analysis/GEMQC8/data/StandConfigurationTables/")
     alignmentTablesPath = os.path.join(srcPath, "Analysis/GEMQC8/data/StandAligmentTables/")
-    resDirPath = os.path.join(os.environ[ "CMSSW_BASE" ], "../")
 
     sys.path.insert(0,pyhtonModulesPath)
 
+    import dumpDBtables
     import config_creator
     import geometry_files_creator
-    import date_time_runInfoDB
 
-    # Conversion from excel to csv files
-    if (xlsx_csv_conversion_flag == "xlsxTOcsv=ON"):
-        import excel_to_csv
-        fileToBeConverted = configTablesPath + "StandGeometryConfiguration_run" + run_number + ".xlsx"
-        excel_to_csv.conversion(fileToBeConverted)
-        fileToBeConverted = alignmentTablesPath + "StandAlignmentValues_run" + run_number + ".xlsx"
-        excel_to_csv.conversion(fileToBeConverted)
+    # Retrieve start date and time of the run
+    fpath =  "/eos/cms/store/group/dpg_gem/comm_gem/QC8_Commissioning/run{:06d}/".format(int(run_number))
+    for x in os.listdir(fpath):
+        if x.endswith("ls0001_index000000.raw"):
+            file0name = x
+            break
+        elif x.endswith("chunk_000000.dat"):
+            file0name = x
+            break
+        else:
+            print "Check the data files... First file (at least) is missing!"
+    startDateTime = file0name.split('_')[3] + "_" + file0name.split('_')[4]
+    time.sleep(1)
+
+    # Get stand configuration table from the DB
+    if int(run_number) >= 218:
+        dumpDBtables.getConfigurationTable(run_number,startDateTime)
 
     # Generate configuration file
     config_creator.configMaker(run_number)
     time.sleep(1)
 
     # Generate geometry files
-    geometry_files_creator.geomMaker(run_number,"--yesAlignment")
-    time.sleep(1)
-
-    # Retrieve start date and time of the run
-    #startDateTimeFromDB = date_time_runInfoDB.startDateTime(run_number,userDB_add)
-    startDateTimeFromDB = "2019-03-14 09:04:00"
-    startDateTimeFromDB = startDateTimeFromDB.rsplit(':', 1)[0]
-    startDateTimeFromDB = startDateTimeFromDB.split(' ')[0] + '_' + startDateTimeFromDB.split(' ')[1]
+    geometry_files_creator.geomMaker(run_number,alignmentDone)
     time.sleep(1)
 
     # Compiling after the generation of the geometry files
@@ -104,13 +109,8 @@ if __name__ == '__main__':
     movingToDir.communicate()
     time.sleep(1)
 
-    mvToDirCommand = "mv " + out_name + " " + resDirPath+outDirName + "/" + out_name
-    movingToDir = subprocess.Popen(mvToDirCommand.split(),stdout=subprocess.PIPE,universal_newlines=True,cwd=runPath)
-    movingToDir.communicate()
-    time.sleep(1)
-
     # Efficiency computation & output
-    effCommand = "root -l -q " + runPath + "macro_validation.c(" + run_number + ",\"" + configTablesPath + "\",\"" + startDateTimeFromDB + "\")"
+    effCommand = "root -l -q " + runPath + "macro_validation.c(" + run_number + ",\"" + dataPath + "\",\"" + startDateTime + "\")"
     efficiency = subprocess.Popen(effCommand.split(),stdout=subprocess.PIPE,universal_newlines=True,cwd=effoutDir)
     while efficiency.poll() is None:
         line = efficiency.stdout.readline()

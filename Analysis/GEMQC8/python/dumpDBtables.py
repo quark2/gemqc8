@@ -1,36 +1,36 @@
 import cx_Oracle
 import os, sys, io
-from date_time_runInfoDB import startDateTime
+import datetime
+import time
 
-def getConfigurationTable(run_num,userRunInfoDB_add):
+def getConfigurationTable(run_num,runDateTime):
     print "\nDownloading ConfigurationTable for run {0}".format(run_num)
 
-    runDateTime = date_time_runInfoDB.startDateTime(run_num,userRunInfoDB_add)
-
-    db = cx_Oracle.connect('GEM_904_COND/904CondDB@INT2R')
+    #db = cx_Oracle.connect('GEM_904_COND/904CondDB@INT2R') # development DB
+    db = cx_Oracle.connect('CMS_COND_GENERAL_R/p3105rof@cms_omds_adg') # production DB
     cur = db.cursor()
 
     delta_min = 94608000 # minimum value of delta (this value is the # of seconds in 3 years)
     goodDateTimeForQuery = ""
 
+    dateRun = runDateTime.split('_')[0]
+    yearRun = dateRun.split('-')[0]
+    monthRun = dateRun.split('-')[1]
+    dayRun = dateRun.split('-')[2]
+    timeRun = runDateTime.split('_')[1]
+    hourRun = timeRun.split('-')[0]
+    minutesRun = timeRun.split('-')[1]
+    secondsRun = timeRun.split('-')[2]
+
     query = "select TIME from CMS_GEM_MUON_VIEW.QC8_GEM_STAND_GEOMETRY_VIEW_RH"
     cur.execute(query)
     for result in cur:
-        standConfigurationDateTime = result[0]
-        date = standConfigurationDateTime.split(' ')[0]
-        year = date.split('-')[0]
-        month = date.split('-')[1]
-        day = date.split('-')[2]
-        time = standConfigurationDateTime.split(' ')[1]
-        hour = time.split(':')[0]
-        minutes = time.split(':')[1]
-        seconds = time.split(':')[2]
-        deltaT = (runDateTime - datetime.datetime(int(year),int(month),int(day),int(hour),int(minutes),int(seconds))).total_seconds()
+        deltaT = (datetime.datetime(int(yearRun),int(monthRun),int(dayRun),int(hourRun),int(minutesRun),int(secondsRun)) - result[0]).total_seconds()
         if (deltaT >= 0 and deltaT < delta_min):
             delta_min = deltaT
-            goodDateTimeForQuery = standConfigurationDateTime
+            goodDateTimeForQuery = result[0]
 
-    query = "select * from CMS_GEM_MUON_VIEW.QC8_GEM_STAND_GEOMETRY_VIEW_RH where TIME="+str(goodDateTimeForQuery)
+    query = "select * from CMS_GEM_MUON_VIEW.QC8_GEM_STAND_GEOMETRY_VIEW_RH"
     cur.execute(query)
 
     configTablesPath = os.path.abspath("dumpDBtables.py").split('QC8Test')[0] + 'QC8Test/src/Analysis/GEMQC8/data/StandConfigurationTables/'
@@ -50,15 +50,17 @@ def getConfigurationTable(run_num,userRunInfoDB_add):
             flow_meter   = result[7]
             time         = result[8]
             run_number   = run_num
-            line = str(chamber_name) + "," + str(gem_num) + "," + str(position) + "," + str(ch_type) + "," + str(flip) + "," + str(amc) + "," + str(oh) + "," + str(flow_meter) + "," + str(run_number) + "\n"
-            outfile.write(line)
+            if (time == goodDateTimeForQuery):
+            	line = str(chamber_name) + "," + str(gem_num) + "," + str(position) + "," + str(ch_type) + "," + str(flip) + "," + str(amc) + "," + str(oh) + "," + str(flow_meter) + "," + str(run_number) + "\n"
+            	outfile.write(line)
 
     print "\nSuccesfully done!\n"
 
 def getAlignmentTable(run_num):
     print "\nDownloading AlignmentTable for run {0}".format(run_num)
 
-    db = cx_Oracle.connect('GEM_904_COND/904CondDB@INT2R')
+    #db = cx_Oracle.connect('GEM_904_COND/904CondDB@INT2R') # development DB
+    db = cx_Oracle.connect('CMS_COND_GENERAL_R/p3105rof@cms_omds_adg') # production DB
     cur = db.cursor()
 
     query = "select * from CMS_GEM_MUON_VIEW.QC8_GEM_ALIGNMENT_VIEW_RH where RUN_NUMBER="+str(run_num)
@@ -87,7 +89,8 @@ def getAlignmentTable(run_num):
 def getHotStripsTable(run_num):
     print "\nDownloading HotStripsTable for run {0}".format(run_num)
 
-    db = cx_Oracle.connect('GEM_904_COND/904CondDB@INT2R')
+    #db = cx_Oracle.connect('GEM_904_COND/904CondDB@INT2R') # development DB
+    db = cx_Oracle.connect('CMS_COND_GENERAL_R/p3105rof@cms_omds_adg') # production DB
     cur = db.cursor()
 
     query = "select * from CMS_GEM_MUON_VIEW.QC8_GEM_MASKED_STRIPS_HOT_V_RH where RUN_NUMBER="+str(run_num)
@@ -115,7 +118,8 @@ def getHotStripsTable(run_num):
 def getDeadStripsTable(run_num):
     print "\nDownloading DeadStripsTable for run {0}".format(run_num)
 
-    db = cx_Oracle.connect('GEM_904_COND/904CondDB@INT2R')
+    #db = cx_Oracle.connect('GEM_904_COND/904CondDB@INT2R') # development DB
+    db = cx_Oracle.connect('CMS_COND_GENERAL_R/p3105rof@cms_omds_adg') # production DB
     cur = db.cursor()
 
     query = "select * from CMS_GEM_MUON_VIEW.QC8_GEM_MASKED_STRIPS_DEAD_RH where RUN_NUMBER="+str(run_num)
@@ -143,9 +147,9 @@ def getDeadStripsTable(run_num):
 if __name__ == '__main__':
     runNumber = sys.argv[1]
     tableType = sys.argv[2]
-    userDB_add = sys.argv[3]
+    dateTimeOfRun = sys.argv[3]
     if tableType == "ConfigurationTable":
-        getConfigurationTable(runNumber,userDB_add)
+        getConfigurationTable(runNumber,dateTimeOfRun)
     elif tableType == "AlignmentTable":
         getAlignmentTable(runNumber)
     elif tableType == "HotStripsTable":

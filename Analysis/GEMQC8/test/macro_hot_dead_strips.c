@@ -137,10 +137,11 @@ void macro_hot_dead_strips(int run, string configDir)
 	}
 	else cout << "Error opening file: " << configName << endl;
 
-  // Identification of value for being a dead (0) or hot (above 5 sigmas) strip per chamber
+  // Identification of value for being a dead or hot strip per chamber
 
   long int DeadStripLimitValue[30];
   long int HotStripLimitValue[30];
+  const int nsigmas = 5;
 
   for (int ch=0; ch<30; ch++)
 	{
@@ -160,21 +161,21 @@ void macro_hot_dead_strips(int run, string configDir)
     digisPerStripPerCh[c]->GetYaxis()->SetTitle("Counts");
     digisPerStripPerCh[c]->Draw();
 
-    int npeaks=2;
+    int npeaks=3;
     TSpectrum *s = new TSpectrum(npeaks);
     int nfound = s->Search(digisPerStripPerCh[c]);
     double *x_peak;
     x_peak = s->GetPositionX();
 
-    float centroid_peak = (x_peak[0]+x_peak[1])/2;
+    float centroid_peak = (x_peak[0]+x_peak[1]+x_peak[2])/2;
 
     TF1 *GaussFit = new TF1("GaussFit","gaus",1,centroid_peak+300.0);
     digisPerStripPerCh[c]->Fit(GaussFit,"RQ");
     digisPerStripPerCh[c]->Fit(GaussFit,"RQ");
     GaussFit->Draw("SAME");
 
-    if ( (GaussFit->GetParameter(1) + 5*GaussFit->GetParameter(2)) > 0 )
-    	HotStripLimitValue[c] = int(GaussFit->GetParameter(1) + 5*GaussFit->GetParameter(2)); // Centroid of the gaussian + 5 sigmas
+    if ( (GaussFit->GetParameter(1) + nsigmas*GaussFit->GetParameter(2)) > 0 )
+    	HotStripLimitValue[c] = int(GaussFit->GetParameter(1) + nsigmas*GaussFit->GetParameter(2)); // Centroid of the gaussian + n sigmas
 
     digisPerStripPerCh[c]->Write(namename.c_str());
     namename = "outPlots_Chamber_Pos_" + to_string(chamberPos[i]) + "/Digi_PerStrip_PerCh_" + to_string(chamberPos[i]) + ".png";

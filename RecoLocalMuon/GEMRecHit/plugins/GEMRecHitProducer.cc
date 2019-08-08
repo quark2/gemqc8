@@ -49,7 +49,7 @@ GEMRecHitProducer::GEMRecHitProducer(const ParameterSet& config):
       }
       inputFile.close();
     }
-    
+
     if (config.existsAs<edm::FileInPath>("deadFile")) {
       deadSource_ = MaskSource::File;
       std::ifstream inputFile(config.getParameter<edm::FileInPath>("deadFile").fullPath());
@@ -109,13 +109,13 @@ void GEMRecHitProducer::beginRun(const edm::Run& r, const edm::EventSetup& setup
       for ( const auto& tomask : theGEMMaskedStripsObj->getMaskVec() ) {
         if ( tomask.rawId == rawId ) {
           const int bit = tomask.strip;
-          mask.set(bit-1);
+          mask.set(bit);
         }
       }
       for ( const auto& tomask : theGEMDeadStripsObj->getDeadVec() ) {
         if ( tomask.rawId == rawId ) {
           const int bit = tomask.strip;
-          mask.set(bit-1);
+          mask.set(bit);
         }
       }
       // add to masking map if masking present in etaPartition
@@ -129,7 +129,7 @@ void GEMRecHitProducer::beginRun(const edm::Run& r, const edm::EventSetup& setup
 void GEMRecHitProducer::produce(Event& event, const EventSetup& setup)
 {
   // Get the digis from the event
-  Handle<GEMDigiCollection> digis; 
+  Handle<GEMDigiCollection> digis;
   event.getByToken(theGEMDigiToken,digis);
 
   // Pass the EventSetup to the algo
@@ -138,7 +138,7 @@ void GEMRecHitProducer::produce(Event& event, const EventSetup& setup)
   // Create the pointer to the collection which will store the rechits
   auto recHitCollection = std::make_unique<GEMRecHitCollection>();
 
-  // Iterate through all digi collections ordered by LayerId   
+  // Iterate through all digi collections ordered by LayerId
   for ( auto gemdgIt = digis->begin(); gemdgIt != digis->end(); ++gemdgIt ) {
     // The layerId
     const GEMDetId& gemId = (*gemdgIt).first;
@@ -161,9 +161,9 @@ void GEMRecHitProducer::produce(Event& event, const EventSetup& setup)
         mask = gemmaskIt->second;
     }
 
-    // Call the reconstruction algorithm    
+    // Call the reconstruction algorithm
     OwnVector<GEMRecHit> recHits = theAlgo->reconstruct(*roll, gemId, range, mask);
-    
+
     if(!recHits.empty()) //FIXME: is it really needed?
       recHitCollection->put(gemId, recHits.begin(), recHits.end());
   }

@@ -4,13 +4,14 @@ import sys
 import io
 import subprocess
 import time
+import datetime
 
 def cmsRunner(split):
   runCommand = "cmsRun -n "+str(split)+" runGEMCosmicStand_alignment.py"
   running = subprocess.Popen(runCommand.split(),stdout=subprocess.PIPE,universal_newlines=True,cwd=runPath)
   while running.poll() is None:
     line = running.stdout.readline()
-#    print(line)
+    print(line)
   print running.stdout.read()
   running.communicate()
   time.sleep(1)
@@ -51,7 +52,6 @@ def align_stopper(run_number, step):
 if __name__ == '__main__':
 
   run_number = sys.argv[1]
-  xlsx_csv_conversion_flag = sys.argv[2]
 
   # Different paths definition
   srcPath = os.path.abspath("launcher_alignment.py").split('QC8Test')[0]+'QC8Test/src/'
@@ -63,16 +63,27 @@ if __name__ == '__main__':
 
   sys.path.insert(0,pyhtonModulesPath)
 
+  import dumpDBtables
   import config_creator
   import geometry_files_creator
 
-  # Conversion from excel to csv files
-  if (xlsx_csv_conversion_flag == "xlsxTOcsv=ON"):
-    import excel_to_csv
-    fileToBeConverted = configTablesPath + "StandGeometryConfiguration_run" + run_number + ".xlsx"
-    excel_to_csv.conversion(fileToBeConverted)
-    fileToBeConverted = alignmentTablesPath + "StandAlignmentValues_run" + run_number + ".xlsx"
-    excel_to_csv.conversion(fileToBeConverted)
+  # Retrieve start date and time of the run
+  fpath =  "/eos/cms/store/group/dpg_gem/comm_gem/QC8_Commissioning/run{:06d}/".format(int(run_number))
+  for x in os.listdir(fpath):
+      if x.endswith("ls0001_index000000.raw"):
+          file0name = x
+          break
+      elif x.endswith("chunk_000000.dat"):
+          file0name = x
+          break
+      else:
+          print "Check the data files... First file (at least) is missing!"
+  startDateTime = file0name.split('_')[3] + "_" + file0name.split('_')[4]
+  time.sleep(1)
+
+  # Get stand configuration table from the DB
+  if int(run_number) >= 218:
+      dumpDBtables.getConfigurationTable(run_number,startDateTime)
 
   # Generate configuration file
   config_creator.configMaker(run_number)
@@ -92,7 +103,7 @@ if __name__ == '__main__':
   step = 0
   docheck = False
   import configureRun_cfi as runConfig
-  cores = 6
+  cores = 8
 
   # Generate geometry files
   geometry_files_creator.geomMaker(run_number, "--noAlignment")

@@ -46,20 +46,45 @@ void macro_certify_events(int run, string configDir)
   char *name = new char[40];
   string namename = "";
 
-	// Getting rechHits per ch per eta vs event number histrogram
+  // Getting digis per ch vs event number histrogram
+
+	TH2D *digisVsEvt = (TH2D*)infile->Get("CertifyEventsQC8/nDigisPerEvtPerCh");
+
+	TH1D *NdigisPerChVsEvt[30];
+	TH1D *NdigisPerChDistribution[30];
+
+	for (unsigned int ch=0; ch<30; ch++)
+	{
+		sprintf(name,"NdigisVsEvent_ch_%u",ch);
+		NdigisPerChVsEvt[ch] = new TH1D(name,"",12000,0,12000000);
+		sprintf(name,"NdigisDistribution_ch_%u",ch);
+		NdigisPerChDistribution[ch] = new TH1D(name,"",10000,1,100001);
+
+		for (int evt=0; evt<12000; evt++)
+		{
+			NdigisPerChVsEvt[ch]->SetBinContent((evt+1),digisVsEvt->GetBinContent(evt+1,ch+1));
+			NdigisPerChDistribution[ch]->Fill(digisVsEvt->GetBinContent(evt+1,ch+1));
+		}
+	}
+
+	// Getting rechHits per ch vs event number histrogram
 
 	TH2D *recHitsVsEvt = (TH2D*)infile->Get("CertifyEventsQC8/nRecHitsPerEvtPerCh");
 
 	TH1D *NrecHitsPerChVsEvt[30];
+	TH1D *NrecHitsPerChDistribution[30];
 
 	for (unsigned int ch=0; ch<30; ch++)
 	{
 		sprintf(name,"NrecHitsVsEvent_ch_%u",ch);
-		NrecHitsPerChVsEvt[ch] = new TH1D(name,"",40000,0,12000000);
+		NrecHitsPerChVsEvt[ch] = new TH1D(name,"",12000,0,12000000);
+		sprintf(name,"NrecHitsDistribution_ch_%u",ch);
+		NrecHitsPerChDistribution[ch] = new TH1D(name,"",10000,1,100001);
 
-		for (int evt=0; evt<40000; evt++)
+		for (int evt=0; evt<12000; evt++)
 		{
 			NrecHitsPerChVsEvt[ch]->SetBinContent((evt+1),recHitsVsEvt->GetBinContent(evt+1,ch+1));
+			NrecHitsPerChDistribution[ch]->Fill(recHitsVsEvt->GetBinContent(evt+1,ch+1));
 		}
 	}
 
@@ -121,6 +146,29 @@ void macro_certify_events(int run, string configDir)
   {
     int c = chamberPos[i];
 
+    // Plotting number of digis per chamber vs evt
+
+		namename = "NdigisVsEvt_" + chamberName[i] + "_in_position_" + to_string(chamberPos[i]) + "_run_" + to_string(run);
+		NdigisPerChVsEvt[c]->SetTitle(namename.c_str());
+		NdigisPerChVsEvt[c]->GetXaxis()->SetTitle("Evt Number");
+		NdigisPerChVsEvt[c]->GetYaxis()->SetTitle("nDigis");
+		NdigisPerChVsEvt[c]->GetXaxis()->SetRangeUser(0,nTotEvents);
+		NdigisPerChVsEvt[c]->Draw();
+		NdigisPerChVsEvt[c]->Write(namename.c_str());
+		namename = "NdigisVsEvt_Ch_Pos_" + to_string(chamberPos[i]) + ".png";
+		Canvas->SaveAs(namename.c_str());
+
+		// Plotting number of digis per chamber vs evt
+
+		namename = "NdigisDistribution_" + chamberName[i] + "_in_position_" + to_string(chamberPos[i]) + "_run_" + to_string(run);
+		NdigisPerChDistribution[c]->SetTitle(namename.c_str());
+		NdigisPerChDistribution[c]->GetXaxis()->SetTitle("nDigis");
+		NdigisPerChDistribution[c]->GetYaxis()->SetTitle("Counts");
+		NdigisPerChDistribution[c]->Draw();
+		NdigisPerChDistribution[c]->Write(namename.c_str());
+		namename = "NdigisDistribution_Ch_Pos_" + to_string(chamberPos[i]) + ".png";
+		Canvas->SaveAs(namename.c_str());
+
 		// Plotting number of recHits per chamber vs evt
 
 		namename = "NrecHitsVsEvt_" + chamberName[i] + "_in_position_" + to_string(chamberPos[i]) + "_run_" + to_string(run);
@@ -133,18 +181,30 @@ void macro_certify_events(int run, string configDir)
 		namename = "NrecHitsVsEvt_Ch_Pos_" + to_string(chamberPos[i]) + ".png";
 		Canvas->SaveAs(namename.c_str());
 
+		// Plotting number of recHits per chamber vs evt
+
+		namename = "NrecHitsDistribution_" + chamberName[i] + "_in_position_" + to_string(chamberPos[i]) + "_run_" + to_string(run);
+		NrecHitsPerChDistribution[c]->SetTitle(namename.c_str());
+		NrecHitsPerChDistribution[c]->GetXaxis()->SetTitle("nRecHits");
+		NrecHitsPerChDistribution[c]->GetYaxis()->SetTitle("Counts");
+		NrecHitsPerChDistribution[c]->Draw();
+		NrecHitsPerChDistribution[c]->Write(namename.c_str());
+		namename = "NrecHitsDistribution_Ch_Pos_" + to_string(chamberPos[i]) + ".png";
+		Canvas->SaveAs(namename.c_str());
+
     // Here looking for events with tripped chamber
-    int binToEvt = 300;
+    int limitRecHitHVtrip = 30;
+    int binToEvt = 1000;
     int binBegin = 0, binEnd = 0;
 
-    for (binBegin = 0; binBegin < 40000; binBegin++)
+    for (binBegin = 0; binBegin < 12000; binBegin++)
     {
-      if (NrecHitsPerChVsEvt[c]->GetBinContent(binBegin+1) < 4)
+      if (NrecHitsPerChVsEvt[c]->GetBinContent(binBegin+1) < limitRecHitHVtrip)
       {
         cout << "Bad event: binBegin!" << endl;
-        for (binEnd = (binBegin+1); binEnd < 40000; binEnd++)
+        for (binEnd = (binBegin+1); binEnd < 12000; binEnd++)
         {
-          if (NrecHitsPerChVsEvt[c]->GetBinContent(binEnd+1) > 4)
+          if (NrecHitsPerChVsEvt[c]->GetBinContent(binEnd+1) > limitRecHitHVtrip)
           {
             cout << "Bad event: binEnd!" << endl;
             break;
@@ -154,8 +214,8 @@ void macro_certify_events(int run, string configDir)
         {
           if (binBegin < 2) beginBadEvt[i].push_back(0 * binToEvt);
           if (binBegin >= 2) beginBadEvt[i].push_back((binBegin-2) * binToEvt);
-          if (binEnd <= (40000-2)) endBadEvt[i].push_back((binEnd+2) * binToEvt);
-          if (binEnd > (40000-2)) endBadEvt[i].push_back(40000 * binToEvt);
+          if (binEnd <= (12000-2)) endBadEvt[i].push_back((binEnd+2) * binToEvt);
+          if (binEnd > (12000-2)) endBadEvt[i].push_back(12000 * binToEvt);
         }
         binBegin = binEnd;
       }

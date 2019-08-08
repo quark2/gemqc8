@@ -187,6 +187,12 @@ process.simSiStripDigis = cms.EDAlias()
 process.load('RecoMuon.TrackingTools.MuonServiceProxy_cff')
 process.MuonServiceProxy.ServiceParameters.Propagators.append('StraightLinePropagator')
 
+# Validation - Get certified events from file
+pyhtonModulesPath = os.path.abspath("runGEMCosmicStand_sim.py").split('QC8Test')[0]+'QC8Test/src/Analysis/GEMQC8/python/'
+sys.path.insert(1,pyhtonModulesPath)
+from readCertEvtsFromFile import GetCertifiedEvents
+certEvts = GetCertifiedEvents(run_number)
+
 process.GEMCosmicMuonForQC8 = cms.EDProducer("GEMCosmicMuonForQC8",
                                              process.MuonServiceProxy,
                                              gemRecHitLabel = cms.InputTag("gemRecHits"),
@@ -196,8 +202,10 @@ process.GEMCosmicMuonForQC8 = cms.EDProducer("GEMCosmicMuonForQC8",
                                              trackResX = cms.double(runConfig.trackResX),
                                              trackResY = cms.double(runConfig.trackResY),
                                              MulSigmaOnWindow = cms.double(runConfig.MulSigmaOnWindow),
+                                             minNumberOfRecHitsPerTrack = cms.uint32(runConfig.minRecHitsPerTrack),
                                              SuperChamberType = cms.vstring(SuperChType),
                                              SuperChamberSeedingLayers = cms.vdouble(SuperChSeedingLayers),
+                                             tripEvents = cms.vstring(certEvts),
                                              MuonSmootherParameters = cms.PSet(PropagatorAlong = cms.string('SteppingHelixPropagatorAny'),
                                                                                PropagatorOpposite = cms.string('SteppingHelixPropagatorAny'),
                                                                                RescalingFactor = cms.double(5.0)
@@ -206,12 +214,6 @@ process.GEMCosmicMuonForQC8 = cms.EDProducer("GEMCosmicMuonForQC8",
 process.GEMCosmicMuonForQC8.ServiceParameters.GEMLayers = cms.untracked.bool(True)
 process.GEMCosmicMuonForQC8.ServiceParameters.CSCLayers = cms.untracked.bool(False)
 process.GEMCosmicMuonForQC8.ServiceParameters.RPCLayers = cms.bool(False)
-
-# Fast Efficiency - Get certified events from file
-pyhtonModulesPath = os.path.abspath("runGEMCosmicStand_sim.py").split('QC8Test')[0]+'QC8Test/src/Analysis/GEMQC8/python/'
-sys.path.insert(1,pyhtonModulesPath)
-from readCertEvtsFromFile import GetCertifiedEvents
-certEvts = GetCertifiedEvents(run_number)
 
 # Validation
 process.ValidationQC8 = cms.EDProducer('ValidationQC8',

@@ -101,22 +101,30 @@ for i in xrange(len(SuperChType)):
 # Config importation & settings
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(options.eventsPerJob))
 
-fpath =  "/eos/cms/store/group/dpg_gem/comm_gem/QC8_Commissioning/run"
-for i in range(6-len(str(run_number))):
-    fpath = fpath + '0'
-fpath = fpath + str(run_number) + "/"
+fpath =  "/eos/cms/store/group/dpg_gem/comm_gem/QC8_Commissioning/run{:06d}/".format(int(run_number))
+
+for x in os.listdir(fpath):
+    if x.endswith("ls0001_index000000.raw"):
+        dataFileExtension = ".raw"
+        uFEDKit = True
+        break
+    elif x.endswith("chunk_000000.dat"):
+        dataFileExtension = ".dat"
+        uFEDKit = False
+        break
+    else:
+        print "Check the data files... First file (at least) is missing!"
 
 # Input source
 process.source = cms.Source("GEMLocalModeDataSource",
-                            fileNames = cms.untracked.vstring ([fpath+x for x in os.listdir(fpath) if x.endswith(".dat")]),
+                            fileNames = cms.untracked.vstring ([fpath+x for x in os.listdir(fpath) if x.endswith(dataFileExtension)]),
                             skipEvents=cms.untracked.uint32(0),
                             fedId = cms.untracked.int32(888),  # which fedID to assign
-                            hasFerolHeader = cms.untracked.bool(False),
-                            runNumber = cms.untracked.int32(run_number)
+                            hasFerolHeader = cms.untracked.bool(uFEDKit),
+                            runNumber = cms.untracked.int32(run_number),
                             )
 
-process.options = cms.untracked.PSet(SkipEvent = cms.untracked.vstring('ProductNotFound')
-                                     )
+process.options = cms.untracked.PSet(SkipEvent = cms.untracked.vstring('ProductNotFound'))
 
 ############## DB file #################
 from CondCore.CondDB.CondDB_cfi import *
@@ -129,7 +137,7 @@ CondDB.connect = cms.string('sqlite_fip:Analysis/GEMQC8/data/EMapFiles/'+eMapFil
 process.GEMCabling = cms.ESSource("PoolDBESSource",
                                   CondDB,
                                   toGet = cms.VPSet(cms.PSet(record = cms.string('GEMeMapRcd'),
-                                                             tag = cms.string('GEMeMap_v6')
+                                                             tag = cms.string('GEMeMap_QC8')
                                                             )
                                                     )
                                   )

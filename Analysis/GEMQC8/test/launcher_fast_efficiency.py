@@ -4,11 +4,11 @@ import sys
 import io
 import subprocess
 import time
+import datetime
 
 if __name__ == '__main__':
 
     run_number = sys.argv[1]
-    xlsx_csv_conversion_flag = sys.argv[2]
 
     # Different paths definition
     srcPath = os.path.join(os.environ[ "CMSSW_BASE" ], "src")
@@ -20,16 +20,27 @@ if __name__ == '__main__':
 
     sys.path.insert(0,pyhtonModulesPath)
 
+    import dumpDBtables
     import config_creator
     import geometry_files_creator
 
-    # Conversion from excel to csv files
-    if (xlsx_csv_conversion_flag == "xlsxTOcsv=ON"):
-        import excel_to_csv
-        fileToBeConverted = configTablesPath + "StandGeometryConfiguration_run" + run_number + ".xlsx"
-        excel_to_csv.conversion(fileToBeConverted)
-        fileToBeConverted = alignmentTablesPath + "StandAlignmentValues_run" + run_number + ".xlsx"
-        excel_to_csv.conversion(fileToBeConverted)
+    # Retrieve start date and time of the run
+    fpath =  "/eos/cms/store/group/dpg_gem/comm_gem/QC8_Commissioning/run{:06d}/".format(int(run_number))
+    for x in os.listdir(fpath):
+        if x.endswith("ls0001_index000000.raw"):
+            file0name = x
+            break
+        elif x.endswith("chunk_000000.dat"):
+            file0name = x
+            break
+        else:
+            print "Check the data files... First file (at least) is missing!"
+    startDateTime = file0name.split('_')[3] + "_" + file0name.split('_')[4]
+    time.sleep(1)
+
+    # Get stand configuration table from the DB
+    if int(run_number) >= 218:
+        dumpDBtables.getConfigurationTable(run_number,startDateTime)
 
     # Generate configuration file
     config_creator.configMaker(run_number)
