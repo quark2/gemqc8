@@ -179,7 +179,7 @@ void macro_tilt_twist(int run, string runPath, string AlignTablePath){
     }
 
   // Writing the output in csv format
-  string ofilename = AlignTablePath+"StandAlignmentValues_run" + to_string(run) + ".csv";
+  string ofilename = AlignTablePath+"StandAlignmentValues_run" + to_string(run) + "_ToDB.csv";
   ofstream oFile(ofilename, std::ios_base::out | std::ios_base::trunc);
   if (oFile.is_open())
     {
