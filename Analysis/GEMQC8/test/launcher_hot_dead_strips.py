@@ -31,7 +31,7 @@ if __name__ == '__main__':
     # Retrieve start date and time of the run
     fpath =  "/eos/cms/store/group/dpg_gem/comm_gem/QC8_Commissioning/run{:06d}/".format(int(run_number))
     for x in os.listdir(fpath):
-        if x.endswith("ls0001_index000000.raw"):
+        if x.endswith("ls0001_allindex.raw"):
             file0name = x
             break
         elif x.endswith("chunk_000000.dat"):
@@ -43,7 +43,7 @@ if __name__ == '__main__':
     time.sleep(1)
 
     # Get stand configuration table from the DB
-    if int(run_number) >= 218:
+    if int(run_number) >= 224:
         dumpDBtables.getConfigurationTable(run_number,startDateTime)
 
     # Generate configuration file
