@@ -235,8 +235,8 @@ void FastEfficiencyQC8::analyze(const edm::Event& e, const edm::EventSetup& iSet
 
 			// Define region 'inside' the ieta of the chamber
 			int n_strip = ch.etaPartition(hitID.roll())->nstrips();
-			double min_x = ch.etaPartition(hitID.roll())->centreOfStrip(1).x();
-			double max_x = ch.etaPartition(hitID.roll())->centreOfStrip(n_strip).x();
+			double min_x = ch.etaPartition(hitID.roll())->centreOfStrip(0).x();
+			double max_x = ch.etaPartition(hitID.roll())->centreOfStrip(n_strip-1).x();
 
 			if (min_x < max_x)
 			{
