@@ -4,7 +4,7 @@ If you want to analyse QC8 real data:
 scram p -n QC8Test CMSSW CMSSW_10_6_0
 cd QC8Test/src
 cmsenv
-git clone https://github.com/giovanni-mocellin/gemqc8.git
+git clone -b Development https://github.com/giovanni-mocellin/gemqc8.git
 mv gemqc8/* .
 rm -rf gemqc8
 scram b -j 4
@@ -22,7 +22,7 @@ If you want to run simulations, download the package following these instruction
 scram p -n QC8Test CMSSW CMSSW_10_6_0
 cd QC8Test/src
 cmsenv
-git clone https://github.com/giovanni-mocellin/gemqc8.git
+git clone -b Development https://github.com/giovanni-mocellin/gemqc8.git
 mv gemqc8/* .
 rm -rf gemqc8
 rm -rf EventFilter
