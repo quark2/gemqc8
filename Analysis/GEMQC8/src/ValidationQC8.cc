@@ -484,8 +484,8 @@ void ValidationQC8::analyze(const edm::Event& e, const edm::EventSetup& iSetup){
         // Define region 'inside' the ieta of the chamber
 
         int n_strip = ch.etaPartition(mRoll)->nstrips();
-        double min_x = ch.etaPartition(mRoll)->centreOfStrip(1).x();
-        double max_x = ch.etaPartition(mRoll)->centreOfStrip(n_strip).x();
+        double min_x = ch.etaPartition(mRoll)->centreOfStrip(0).x();
+        double max_x = ch.etaPartition(mRoll)->centreOfStrip(n_strip-1).x();
 
         if ( (tlp.x()>(min_x)) & (tlp.x() < (max_x)) )
         {
