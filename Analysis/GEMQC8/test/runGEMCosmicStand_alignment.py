@@ -273,7 +273,7 @@ process.schedule = cms.Schedule(process.rawTOhits_step,
                                 process.reconstruction_step,
                                 process.alignment_step,
                                 process.endjob_step
-                        )
+                                )
 
 # enable validation event filtering
 process.rawTOhits_step.remove(process.validationEventFilter)

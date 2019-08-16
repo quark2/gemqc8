@@ -748,6 +748,32 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 	Canvas->SaveAs(namename.c_str());
 	Canvas->Clear();
 
+	// Avg Efficiency Per Chamber results in csv files
+
+	string AvgEffOutFile = "Average_Efficiency_Per_Chamber.csv";
+	avgEffFile.open(AvgEffOutFile);
+
+	entry = "RunNumber," + to_string(run) + "\n";
+	avgEffFile << entry;
+	entry = "PositionCMSSW,Position,Chamber,Efficiency,ErrorEfficiency\n";
+	avgEffFile << entry;
+
+	for (unsigned int i=0; i<chamberPos.size(); i++)
+	{
+		int ch = chamberPos[i];
+		int Position = AvgEffPerCh->GetX()[ch];
+		int Row = int((ch%10)/2)+1;
+		int Col = int(ch/10)+1;
+		string TopBottom;
+		if (ch%2 == 0) TopBottom = "B";
+		if (ch%2 == 1) TopBottom = "T";
+		eff_value = AvgEffPerCh->GetY()[ch];
+		error_value = AvgEffPerCh->GetErrorY(ch);
+		entry = to_string(Position) + "," + to_string(Row) + "/" + to_string(Col) + "/" + TopBottom + "," + chamberName[i] + "," + to_string(eff_value) + "," + to_string(error_value) + "\n";
+		avgEffFile << entry;
+	}
+	avgEffFile.close();
+
 	standConfigFile.close();
 	infile->Close();
 }
