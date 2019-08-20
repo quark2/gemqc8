@@ -51,7 +51,12 @@ def align_stopper(run_number, step):
 
 if __name__ == '__main__':
 
-  run_number = sys.argv[1]
+  # Define the parser
+  import argparse
+  parser = argparse.ArgumentParser(description="QC8 data analysis step 4. Software alignment of the chambers in the stand. For any doubt: https://twiki.cern.ch/twiki/bin/view/CMS/GEMCosmicRayAnalysis")
+  # Positional arguments
+  parser.add_argument("run_number", type=int, help="Specify the run number")
+  args = parser.parse_args()
 
   # Different paths definition
   srcPath = os.path.abspath("launcher_alignment.py").split('QC8Test')[0]+'QC8Test/src/'
@@ -68,7 +73,7 @@ if __name__ == '__main__':
   import geometry_files_creator
 
   # Retrieve start date and time of the run
-  fpath =  "/eos/cms/store/group/dpg_gem/comm_gem/QC8_Commissioning/run{:06d}/".format(int(run_number))
+  fpath =  "/eos/cms/store/group/dpg_gem/comm_gem/QC8_Commissioning/run{:06d}/".format(int(args.run_number))
   for x in os.listdir(fpath):
       if x.endswith("ls0001_allindex.raw"):
           file0name = x
@@ -82,11 +87,11 @@ if __name__ == '__main__':
   time.sleep(1)
 
   # Get stand configuration table from the DB
-  if int(run_number) >= 224:
-      dumpDBtables.getConfigurationTable(run_number,startDateTime)
+  if int(args.run_number) >= 224:
+      dumpDBtables.getConfigurationTable(args.run_number,startDateTime)
 
   # Generate configuration file
-  config_creator.configMaker(run_number)
+  config_creator.configMaker(args.run_number)
   time.sleep(1)
 
   # Compiling after the generation of the geometry files
@@ -106,13 +111,13 @@ if __name__ == '__main__':
   cores = 8
 
   # Generate geometry files
-  geometry_files_creator.geomMaker(run_number, "--noAlignment")
+  geometry_files_creator.geomMaker(args.run_number, "--noAlignment")
   time.sleep(1)
 
   while not(stop_align or step>5):
     cmsRunner(cores)
     #  # Creating folder outside the CMMSW release to put the output files and plots
-    outDirName = "Results_QC8_alignment_run_"+run_number
+    outDirName = "Results_QC8_alignment_run_"+args.run_number
     #---# Remove old version if want to recreate
     if (os.path.exists(resDirPath+outDirName)):
       rmDirCommand = "rm -rf "+outDirName
@@ -136,9 +141,9 @@ if __name__ == '__main__':
 
     # Selecting the correct output file, changing the name and moving to the output folder
     out_name = 'out_run_'
-    for i in range(6-len(run_number)):
+    for i in range(6-len(args.run_number)):
       out_name = out_name + '0'
-    out_name = out_name + run_number + '.root'
+    out_name = out_name + args.run_number + '.root'
 
     mvToDirCommand = "mv alignment_" + out_name + " " + resDirPath+outDirName + "/alignment_" + out_name
     movingToDir = subprocess.Popen(mvToDirCommand.split(),stdout=subprocess.PIPE,universal_newlines=True,cwd=runPath)
@@ -146,7 +151,7 @@ if __name__ == '__main__':
     time.sleep(1)
 
     # Alignment computation & output2
-    alignCommand = "root -l -q " + runPath + "macro_alignment.c(" + str(run_number) + ",\"" + runPath + "\",\"" + alignmentTablesPath + "\"," + str(step) + ")"
+    alignCommand = "root -l -q " + runPath + "macro_alignment.c(" + str(args.run_number) + ",\"" + runPath + "\",\"" + alignmentTablesPath + "\"," + str(step) + ")"
     alignment = subprocess.Popen(alignCommand.split(),stdout=subprocess.PIPE,universal_newlines=True,cwd=alignoutDir)
     print line
     while alignment.poll() is None:
@@ -157,7 +162,7 @@ if __name__ == '__main__':
     time.sleep(1)
 
     if(docheck):
-      checkCommand = "python " + pyhtonModulesPath + "check.py " + str(run_number) + " " + str(step)
+      checkCommand = "python " + pyhtonModulesPath + "check.py " + str(args.run_number) + " " + str(step)
       check = subprocess.Popen(checkCommand.split(),stdout=subprocess.PIPE,universal_newlines=True,cwd=alignoutDir)
       print line
       while check.poll() is None:
@@ -167,19 +172,19 @@ if __name__ == '__main__':
       check.communicate()
       time.sleep(1)
 
-    stop_align = align_stopper(run_number, step)
+    stop_align = align_stopper(args.run_number, step)
     print stop_align
     step += 1
 
     # Generate geometry files
-    geometry_files_creator.geomMaker(run_number, "--forAlignment")
+    geometry_files_creator.geomMaker(args.run_number, "--forAlignment")
     time.sleep(1)
 
   # Running the CMSSW code for the last step of alignment
   cmsRunner(cores)
 
   #  # Creating folder outside the CMMSW release to put the output files and plots
-  outDirName = "Results_QC8_alignment_run_"+run_number
+  outDirName = "Results_QC8_alignment_run_"+args.run_number
   #---# Remove old version if want to recreate
   if (os.path.exists(resDirPath+outDirName)):
     rmDirCommand = "rm -rf "+outDirName
@@ -204,9 +209,9 @@ if __name__ == '__main__':
 
   # Selecting the correct output file, changing the name and moving to the output folder
   out_name = 'out_run_'
-  for i in range(6-len(run_number)):
+  for i in range(6-len(args.run_number)):
     out_name = out_name + '0'
-  out_name = out_name + str(run_number) + '.root'
+  out_name = out_name + str(args.run_number) + '.root'
 
   mvToDirCommand = "mv alignment_" + out_name + " " + resDirPath+outDirName + "/alignment_" + out_name
   movingToDir = subprocess.Popen(mvToDirCommand.split(),stdout=subprocess.PIPE,universal_newlines=True,cwd=runPath)
@@ -214,7 +219,7 @@ if __name__ == '__main__':
   time.sleep(1)
 
   # Alignment computation & output
-  tilttwistCommand = "root -l -q " + runPath + "macro_tilt_twist.c(" + run_number + ",\"" + runPath + "\",\"" + alignmentTablesPath + "\")"
+  tilttwistCommand = "root -l -q " + runPath + "macro_tilt_twist.c(" + args.run_number + ",\"" + runPath + "\",\"" + alignmentTablesPath + "\")"
   tilttwist = subprocess.Popen(tilttwistCommand.split(),stdout=subprocess.PIPE,universal_newlines=True,cwd=tilttwistoutDir)
   while tilttwist.poll() is None:
     line = tilttwist.stdout.readline()
