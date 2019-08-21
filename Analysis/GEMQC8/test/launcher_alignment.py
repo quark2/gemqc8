@@ -71,6 +71,7 @@ if __name__ == '__main__':
   import dumpDBtables
   import config_creator
   import geometry_files_creator
+  import convertAlignmentTables
 
   # Retrieve start date and time of the run
   fpath =  "/eos/cms/store/group/dpg_gem/comm_gem/QC8_Commissioning/run{:06d}/".format(int(args.run_number))
@@ -227,3 +228,6 @@ if __name__ == '__main__':
   print tilttwist.stdout.read()
   tilttwist.communicate()
   time.sleep(1)
+
+  # Converting tables ToDB-like into FromDB-like
+  convertAlignmentTables.convertAlignment(args.run_number,"alignment")
