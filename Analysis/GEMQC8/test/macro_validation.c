@@ -212,6 +212,32 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 		}
 	}
 
+	// Getting associated rechHits per layer histrogram
+
+	TH3D *nonAssocRecHitsPerLayer = (TH3D*)infile->Get("ValidationQC8/nonAssociatedHits2DPerLayer");
+
+	// Associated rechHits plots per layer
+
+	TH2D *nonAssocRecHits2D[10];
+	for (int row=0; row<5; row++)
+	{
+		namename = "nonAssociatedRecHits_row_" + to_string(row+1) + "_B";
+		nonAssocRecHits2D[row*2] = new TH2D(namename.c_str(),"",2000,-100,100,8,-0.5,7.5);
+		namename = "nonAssociatedRecHits_row_" + to_string(row+1) + "_T";
+		nonAssocRecHits2D[(row*2)+1] = new TH2D(namename.c_str(),"",2000,-100,100,8,-0.5,7.5);
+	}
+
+	for (int layer=0; layer<10; layer++)
+	{
+		for (int eta=1; eta<=8; eta++)
+		{
+			for (int phi=1; phi<=2000; phi++)
+			{
+				nonAssocRecHits2D[layer]->SetBinContent(phi,eta,nonAssocRecHitsPerLayer->GetBinContent(phi,eta,layer+1));
+			}
+		}
+	}
+
 	// Getting clusterSize 3D histogram
 
 	TH3D *clusterSize3D = (TH3D*)infile->Get("ValidationQC8/clusterSize");
@@ -234,11 +260,11 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 		}
 	}
 
-	// Getting clusterSize 3D histogram
+	// Getting associated hits clusterSize 3D histogram
 
 	TH3D *assocHitsClusterSize3D = (TH3D*)infile->Get("ValidationQC8/associatedHitsClusterSize");
 
-	// cluster size plots per chamber and per eta partition
+	// Associated hits cluster size plots per chamber and per eta partition
 
 	TH1D *assocHitsClusterSize1D[30][8];
 
@@ -252,6 +278,28 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 			for (int cls=0; cls<20; cls++)
 			{
 				assocHitsClusterSize1D[ch][eta]->SetBinContent((cls+1),assocHitsClusterSize3D->GetBinContent(ch+1,eta+1,cls+1));
+			}
+		}
+	}
+
+	// Getting non associated hits clusterSize 3D histogram
+
+	TH3D *nonAssocHitsClusterSize3D = (TH3D*)infile->Get("ValidationQC8/nonAssociatedHitsClusterSize");
+
+	// Non associated hits cluster size plots per chamber and per eta partition
+
+	TH1D *nonAssocHitsClusterSize1D[30][8];
+
+	for (unsigned int ch=0; ch<30; ch++)
+	{
+		for (unsigned int eta=0; eta<8; eta++)
+		{
+			sprintf(name,"nonAssocHitsClusterSize_ch_%u_eta_%u",ch,(eta+1));
+			nonAssocHitsClusterSize1D[ch][eta] = new TH1D(name,"",20,0,20);
+
+			for (int cls=0; cls<20; cls++)
+			{
+				nonAssocHitsClusterSize1D[ch][eta]->SetBinContent((cls+1),nonAssocHitsClusterSize3D->GetBinContent(ch+1,eta+1,cls+1));
 			}
 		}
 	}
@@ -543,13 +591,28 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 
 		for (unsigned int eta=0; eta<8; eta++)
 		{
-			namename = "AsssociatedHitsClusterSize_" + chamberName[i] + "_in_position_" + to_string(chamberPos[i]) + "_eta_" + to_string(eta+1) + "_run_" + to_string(run);
+			namename = "AssociatedHitsClusterSize_" + chamberName[i] + "_in_position_" + to_string(chamberPos[i]) + "_eta_" + to_string(eta+1) + "_run_" + to_string(run);
 			assocHitsClusterSize1D[c][eta]->SetTitle(namename.c_str());
 			assocHitsClusterSize1D[c][eta]->GetXaxis()->SetTitle("ClusterSize");
 			assocHitsClusterSize1D[c][eta]->GetYaxis()->SetTitle("Counts");
 			assocHitsClusterSize1D[c][eta]->Draw();
 			assocHitsClusterSize1D[c][eta]->Write(namename.c_str());
-			namename = "outPlots_Chamber_Pos_" + to_string(chamberPos[i]) + "/AsssociatedHitsClusterSize_Ch_Pos_" + to_string(chamberPos[i]) + "_eta_" + to_string(eta+1) + ".png";
+			namename = "outPlots_Chamber_Pos_" + to_string(chamberPos[i]) + "/AssociatedHitsClusterSize_Ch_Pos_" + to_string(chamberPos[i]) + "_eta_" + to_string(eta+1) + ".png";
+			Canvas->SaveAs(namename.c_str());
+			Canvas->Clear();
+		}
+
+		// Plotting clusterSize of non associated recHits per chamber per eta
+
+		for (unsigned int eta=0; eta<8; eta++)
+		{
+			namename = "NonAssociatedHitsClusterSize_" + chamberName[i] + "_in_position_" + to_string(chamberPos[i]) + "_eta_" + to_string(eta+1) + "_run_" + to_string(run);
+			nonAssocHitsClusterSize1D[c][eta]->SetTitle(namename.c_str());
+			nonAssocHitsClusterSize1D[c][eta]->GetXaxis()->SetTitle("ClusterSize");
+			nonAssocHitsClusterSize1D[c][eta]->GetYaxis()->SetTitle("Counts");
+			nonAssocHitsClusterSize1D[c][eta]->Draw();
+			nonAssocHitsClusterSize1D[c][eta]->Write(namename.c_str());
+			namename = "outPlots_Chamber_Pos_" + to_string(chamberPos[i]) + "/NonAssociatedHitsClusterSize_Ch_Pos_" + to_string(chamberPos[i]) + "_eta_" + to_string(eta+1) + ".png";
 			Canvas->SaveAs(namename.c_str());
 			Canvas->Clear();
 		}
@@ -646,6 +709,38 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 		}
 		assocRecHits2D[(row*2)+1]->Draw("colz");
 		namename = "associatedRecHits_Row_" + to_string(row+1) + "_T.png";
+		Canvas->SaveAs(namename.c_str());
+		Canvas->Clear();
+	}
+
+	// Plots of non associsated recHits per layer
+
+	for (int row=0; row<5; row++)
+	{
+		namename = "nonAssociatedRecHits_Row_" + to_string(row+1) + "_B" + "_run_" + to_string(run);
+		nonAssocRecHits2D[row*2]->SetTitle(namename.c_str());
+		nonAssocRecHits2D[row*2]->SetStats(0);
+		nonAssocRecHits2D[row*2]->GetXaxis()->SetTitle("x [cm]");
+		nonAssocRecHits2D[row*2]->GetYaxis()->SetTitle("#eta partition");
+		for (int y = 0; y < 8; y++)
+		{
+			nonAssocRecHits2D[row*2]->GetYaxis()->SetBinLabel(y+1, to_string(y+1).c_str());
+		}
+		nonAssocRecHits2D[row*2]->Draw("colz");
+		namename = "nonAssociatedRecHits_Row_" + to_string(row+1) + "_B.png";
+		Canvas->SaveAs(namename.c_str());
+		Canvas->Clear();
+		namename = "nonAssociatedRecHits_Row_" + to_string(row+1) + "_T" + "_run_" + to_string(run);
+		nonAssocRecHits2D[(row*2)+1]->SetTitle(namename.c_str());
+		nonAssocRecHits2D[(row*2)+1]->SetStats(0);
+		nonAssocRecHits2D[(row*2)+1]->GetXaxis()->SetTitle("x [cm]");
+		nonAssocRecHits2D[(row*2)+1]->GetYaxis()->SetTitle("#eta partition");
+		for (int y = 0; y < 8; y++)
+		{
+			nonAssocRecHits2D[row*2+1]->GetYaxis()->SetBinLabel(y+1, to_string(y+1).c_str());
+		}
+		nonAssocRecHits2D[(row*2)+1]->Draw("colz");
+		namename = "nonAssociatedRecHits_Row_" + to_string(row+1) + "_T.png";
 		Canvas->SaveAs(namename.c_str());
 		Canvas->Clear();
 	}
@@ -750,8 +845,11 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 
 	// Avg Efficiency Per Chamber results in csv files
 
+	ofstream avgEffFile;
 	string AvgEffOutFile = "Average_Efficiency_Per_Chamber.csv";
 	avgEffFile.open(AvgEffOutFile);
+	double eff_value, error_value;
+	string entry = "";
 
 	entry = "RunNumber," + to_string(run) + "\n";
 	avgEffFile << entry;

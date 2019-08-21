@@ -42,9 +42,12 @@ ValidationQC8::ValidationQC8(const edm::ParameterSet& cfg): GEMBaseValidation(cf
   recHits3D = fs->make<TH3D>("recHits3D","recHits 3D map",200,-100,100,156,-61,95,83,-12,154); // volume defined by the scintillators
   recHits2DPerLayer = fs->make<TH3D>("recHits2DPerLayer","recHits per layer",2000,-100,100,8,0,8,10,0,10);
   associatedHits2DPerLayer = fs->make<TH3D>("associatedHits2DPerLayer","Associated recHits to track per layer",2000,-100,100,8,0,8,10,0,10);
+  nonAssociatedHits2DPerLayer = fs->make<TH3D>("nonAssociatedHits2DPerLayer","Non associated recHits to track per layer",2000,-100,100,8,0,8,10,0,10);
   recHitsPerEvt = fs->make<TH1D>("recHitsPerEvt","recHits per event",1000,0,1000);
+  nonAssRecHitsPerEvt = fs->make<TH2D>("nonAssRecHitsPerEvt","Non associated recHits per event",30,0,30,100,0,100);
   clusterSize = fs->make<TH3D>("clusterSize","clusterSize per chamber per eta partition",30,0,30,8,0,8,20,0,20);
   associatedHitsClusterSize = fs->make<TH3D>("associatedHitsClusterSize","clusterSize of associated hits per chamber per eta partition",30,0,30,8,0,8,20,0,20);
+  nonAssociatedHitsClusterSize = fs->make<TH3D>("nonAssociatedHitsClusterSize","clusterSize of non associated hits per chamber per eta partition",30,0,30,8,0,8,20,0,20);
   residualPhi = fs->make<TH1D>("residualPhi","residualPhi",400,-5,5);
   residualEta = fs->make<TH1D>("residualEta","residualEta",200,-10,10);
   recHitsPerTrack = fs->make<TH1D>("recHitsPerTrack","recHits per reconstructed track",15,0,15);
@@ -211,6 +214,7 @@ void ValidationQC8::analyze(const edm::Event& e, const edm::EventSetup& iSetup){
   for (int i=0; i<30; i++)
   {
     nDigisPerCh[i] = 0;
+    nOfNonAssHits[i] = 0;
     testTrajHitX[i] = testTrajHitY[i] = testTrajHitZ[i] = -999.9;
     confTestHitX[i] = confTestHitY[i] = confTestHitZ[i] = -999.9;
   }
@@ -577,15 +581,24 @@ void ValidationQC8::analyze(const edm::Event& e, const edm::EventSetup& iSetup){
 
               for ( GEMRecHitCollection::const_iterator rechit = gemRecHits->begin(); rechit != gemRecHits->end(); ++rechit )
               {
+                GEMDetId recHitID((*rechit).rawId());
+                int recHitCh = recHitID.chamber()+recHitID.layer()-2;
+                int recHitEta = recHitID.roll()-1;
                 GlobalPoint rechitGP = GEMGeometry_->idToDet((*rechit).gemId())->surface().toGlobal(rechit->localPosition());
 
-                if (fabs(rechitGP.x()-tempHitGP.x())<0.01 && fabs(rechitGP.y()-tempHitGP.y())<0.01 && fabs(rechitGP.z()-tempHitGP.z())<0.01)
+                if (fabs(rechitGP.x()-tempHitGP.x())<0.01 && fabs(rechitGP.y()-tempHitGP.y())<0.01 && recHitCh==chConfHit)
                 {
-                  associatedHitsClusterSize->Fill(chConfHit,etaConfHit,(*rechit).clusterSize());
-                  break;
+                  associatedHitsClusterSize->Fill(recHitCh,recHitEta,(*rechit).clusterSize());
+                }
+                else if (fabs(rechitGP.x()-tempHitGP.x())>=0.01 && fabs(rechitGP.y()-tempHitGP.y())>=0.01 && recHitCh==chConfHit)
+                {
+                  nonAssociatedHitsClusterSize->Fill(recHitCh,recHitEta,(*rechit).clusterSize());
+                  nonAssociatedHits2DPerLayer->Fill(rechitGP.x(),recHitEta,recHitCh%10);
+                  nOfNonAssHits[recHitCh]++;
                 }
               }
             }
+            nonAssRecHitsPerEvt->Fill(index,nOfNonAssHits[index]);
           }
         }
         continue;
