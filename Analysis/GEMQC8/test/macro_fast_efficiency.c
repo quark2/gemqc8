@@ -172,10 +172,10 @@ void macro_fast_efficiency(int run, string configDir)
 	ifstream standConfigFile (configName);
 
 	string line, split, comma = ",", slash = "/";
-	vector<string> chamberName;
+	vector<string> chamberName, chamberNamePlot;
 	int ChPos = 0;
 	vector<int> chamberPos;
-	size_t pos = 0;
+	size_t pos = 0, pos_slash = 0;
 
 	if (standConfigFile.is_open())
 	{
@@ -185,6 +185,8 @@ void macro_fast_efficiency(int run, string configDir)
 			split = line.substr(0, pos);
 			if (split == "CH_SERIAL_NUMBER") continue;
 			chamberName.push_back(split);
+			pos_slash = split.find(slash);
+			chamberNamePlot.push_back(split.substr(0,pos_slash)+split.substr(pos_slash+slash.length(),pos));
 			line.erase(0, pos + comma.length());
 
 			pos = line.find(comma);
@@ -367,6 +369,7 @@ void macro_fast_efficiency(int run, string configDir)
 			clusterSize1D[c][eta]->GetXaxis()->SetTitle("ClusterSize");
 			clusterSize1D[c][eta]->GetYaxis()->SetTitle("Counts");
 			clusterSize1D[c][eta]->Draw();
+			namename = "ClusterSize_" + chamberNamePlot[i] + "_in_position_" + to_string(chamberPos[i]) + "_eta_" + to_string(eta+1) + "_run_" + to_string(run);
 			clusterSize1D[c][eta]->Write(namename.c_str());
 			namename = "outPlots_Chamber_Pos_" + to_string(chamberPos[i]) + "/ClusterSize_Ch_Pos_" + to_string(chamberPos[i]) + "_eta_" + to_string(eta+1) + ".png";
 			Canvas->SaveAs(namename.c_str());
@@ -385,6 +388,7 @@ void macro_fast_efficiency(int run, string configDir)
 		}
 		NrecHitsPerChVsEvt[c]->GetXaxis()->SetRangeUser(0,nTotEvents);
 		NrecHitsPerChVsEvt[c]->Draw("colz");
+		namename = "NrecHitsVsEvt_" + chamberNamePlot[i] + "_in_position_" + to_string(chamberPos[i]) + "_run_" + to_string(run);
 		NrecHitsPerChVsEvt[c]->Write(namename.c_str());
 		namename = "outPlots_Chamber_Pos_" + to_string(chamberPos[i]) + "/NrecHitsVsEvt_Ch_Pos_" + to_string(chamberPos[i]) + ".png";
 		Canvas->SaveAs(namename.c_str());
@@ -402,6 +406,7 @@ void macro_fast_efficiency(int run, string configDir)
 			occupacyConfHits2D[c]->GetYaxis()->SetBinLabel(y+1, to_string(y+1).c_str());
 		}
 		occupacyConfHits2D[c]->Draw("colz");
+		namename = "OccupacyConfHit_" + chamberNamePlot[i] + "_in_position_" + to_string(chamberPos[i]) + "_run_" + to_string(run);
 		occupacyConfHits2D[c]->Write(namename.c_str());
 		namename = "outPlots_Chamber_Pos_" + to_string(chamberPos[i]) + "/OccupacyConfHit_Ch_Pos_" + to_string(chamberPos[i]) + ".png";
 		Canvas->SaveAs(namename.c_str());

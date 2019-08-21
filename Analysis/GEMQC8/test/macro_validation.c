@@ -310,10 +310,10 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 	ifstream standConfigFile (configName);
 
 	string line, split, comma = ",", slash = "/";
-	vector<string> chamberName;
+	vector<string> chamberName, chamberNamePlot;
 	int ChPos = 0;
 	vector<int> chamberPos;
-	size_t pos = 0;
+	size_t pos = 0, pos_slash = 0;
 
 	if (standConfigFile.is_open())
 	{
@@ -323,6 +323,8 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 			split = line.substr(0, pos);
 			if (split == "CH_SERIAL_NUMBER") continue;
 			chamberName.push_back(split);
+			pos_slash = split.find(slash);
+			chamberNamePlot.push_back(split.substr(0,pos_slash)+split.substr(pos_slash+slash.length(),pos));
 			line.erase(0, pos + comma.length());
 
 			pos = line.find(comma);
@@ -497,6 +499,7 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 		denom1D[c]->SetTitle(namename.c_str());
 		denom1D[c]->GetXaxis()->SetTitle("VFAT");
 		denom1D[c]->GetYaxis()->SetTitle("Counts");
+		namename = "Denom_" + chamberNamePlot[i] + "_in_position_" + to_string(chamberPos[i]) + "_run_" + to_string(run);
 		denom1D[c]->Write(namename.c_str());
 		denom1D[c]->SetLineColor(kRed);
 		denom1D[c]->Draw();
@@ -504,6 +507,7 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 		num1D[c]->SetTitle(namename.c_str());
 		num1D[c]->GetXaxis()->SetTitle("VFAT");
 		num1D[c]->GetYaxis()->SetTitle("Counts");
+		namename = "Num_" + chamberNamePlot[i] + "_in_position_" + to_string(chamberPos[i]);
 		num1D[c]->Write(namename.c_str());
 		namename = "Num_Denom_" + chamberName[i] + "_in_position_" + to_string(chamberPos[i]) + "_run_" + to_string(run);
 		num1D[c]->SetTitle(namename.c_str());
@@ -523,6 +527,7 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 		eff1D[c]->GetYaxis()->SetRangeUser(min_eff,max_eff);
 		eff1D[c]->SetMarkerStyle(20);
 		eff1D[c]->Draw();
+		namename = "Efficiency_" + chamberNamePlot[i] + "_in_position_" + to_string(chamberPos[i]) + "_run_" + to_string(run);
 		eff1D[c]->Write(namename.c_str());
 		TF1 *avgEffFit = new TF1("avgEffFit","pol0",0,24);
 		eff1D[c]->Fit(avgEffFit,"NOQ");
@@ -581,6 +586,7 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 			clusterSize1D[c][eta]->GetXaxis()->SetTitle("ClusterSize");
 			clusterSize1D[c][eta]->GetYaxis()->SetTitle("Counts");
 			clusterSize1D[c][eta]->Draw();
+			namename = "ClusterSize_" + chamberNamePlot[i] + "_in_position_" + to_string(chamberPos[i]) + "_eta_" + to_string(eta+1) + "_run_" + to_string(run);
 			clusterSize1D[c][eta]->Write(namename.c_str());
 			namename = "outPlots_Chamber_Pos_" + to_string(chamberPos[i]) + "/ClusterSize_Ch_Pos_" + to_string(chamberPos[i]) + "_eta_" + to_string(eta+1) + ".png";
 			Canvas->SaveAs(namename.c_str());
@@ -596,6 +602,7 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 			assocHitsClusterSize1D[c][eta]->GetXaxis()->SetTitle("ClusterSize");
 			assocHitsClusterSize1D[c][eta]->GetYaxis()->SetTitle("Counts");
 			assocHitsClusterSize1D[c][eta]->Draw();
+			namename = "AssociatedHitsClusterSize_" + chamberNamePlot[i] + "_in_position_" + to_string(chamberPos[i]) + "_eta_" + to_string(eta+1) + "_run_" + to_string(run);
 			assocHitsClusterSize1D[c][eta]->Write(namename.c_str());
 			namename = "outPlots_Chamber_Pos_" + to_string(chamberPos[i]) + "/AssociatedHitsClusterSize_Ch_Pos_" + to_string(chamberPos[i]) + "_eta_" + to_string(eta+1) + ".png";
 			Canvas->SaveAs(namename.c_str());
@@ -611,6 +618,7 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 			nonAssocHitsClusterSize1D[c][eta]->GetXaxis()->SetTitle("ClusterSize");
 			nonAssocHitsClusterSize1D[c][eta]->GetYaxis()->SetTitle("Counts");
 			nonAssocHitsClusterSize1D[c][eta]->Draw();
+			namename = "NonAssociatedHitsClusterSize_" + chamberNamePlot[i] + "_in_position_" + to_string(chamberPos[i]) + "_eta_" + to_string(eta+1) + "_run_" + to_string(run);
 			nonAssocHitsClusterSize1D[c][eta]->Write(namename.c_str());
 			namename = "outPlots_Chamber_Pos_" + to_string(chamberPos[i]) + "/NonAssociatedHitsClusterSize_Ch_Pos_" + to_string(chamberPos[i]) + "_eta_" + to_string(eta+1) + ".png";
 			Canvas->SaveAs(namename.c_str());
@@ -629,6 +637,7 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 			digi2D[c]->GetYaxis()->SetBinLabel(y+1, to_string(y+1).c_str());
 		}
 		digi2D[c]->Draw("colz");
+		namename = "Digi_" + chamberNamePlot[i] + "_in_position_" + to_string(chamberPos[i]) + "_run_" + to_string(run);
 		digi2D[c]->Write(namename.c_str());
 		namename = "outPlots_Chamber_Pos_" + to_string(chamberPos[i]) + "/Digi_Ch_Pos_" + to_string(chamberPos[i]) + ".png";
 		Canvas->SaveAs(namename.c_str());
@@ -642,6 +651,7 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 		nDigis[c]->GetXaxis()->SetTitle("Digi Multiplicity");
 		nDigis[c]->GetYaxis()->SetTitle("Counts");
 		nDigis[c]->Draw();
+		namename = "NumberOfDigis_" + chamberNamePlot[i] + "_in_position_" + to_string(chamberPos[i]) + "_run_" + to_string(run);
 		nDigis[c]->Write(namename.c_str());
 		namename = "outPlots_Chamber_Pos_" + to_string(chamberPos[i]) + "/NumberOfDigis_Ch_Pos_" + to_string(chamberPos[i]) + ".png";
 		Canvas->SaveAs(namename.c_str());
