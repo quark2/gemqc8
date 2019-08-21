@@ -590,7 +590,7 @@ void ValidationQC8::analyze(const edm::Event& e, const edm::EventSetup& iSetup){
                 {
                   associatedHitsClusterSize->Fill(recHitCh,recHitEta,(*rechit).clusterSize());
                 }
-                else if (fabs(rechitGP.x()-tempHitGP.x())>=0.01 && fabs(rechitGP.y()-tempHitGP.y())>=0.01 && recHitCh==chConfHit)
+                else if (fabs(rechitGP.x()-tempHitGP.x())>1.0 && fabs(rechitGP.y()-tempHitGP.y())>1.0 && recHitCh==chConfHit)
                 {
                   nonAssociatedHitsClusterSize->Fill(recHitCh,recHitEta,(*rechit).clusterSize());
                   nonAssociatedHits2DPerLayer->Fill(rechitGP.x(),recHitEta,recHitCh%10);
