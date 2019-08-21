@@ -92,9 +92,12 @@ private:
   TH3D *recHits3D;
   TH3D *recHits2DPerLayer;
   TH3D *associatedHits2DPerLayer;
+  TH3D *nonAssociatedHits2DPerLayer;
   TH1D *recHitsPerEvt;
+  TH2D *nonAssRecHitsPerEvt;
   TH3D *clusterSize;
   TH3D *associatedHitsClusterSize;
+  TH3D *nonAssociatedHitsClusterSize;
   TH1D *residualPhi;
   TH1D *residualEta;
   TH1D *recHitsPerTrack;
@@ -112,6 +115,7 @@ private:
   double t_begin;
   double t_end;
   int nDigisPerCh[30];
+  int nOfNonAssHits[30];
   int nrecHit;
   int nTraj;
   float trajTheta;
