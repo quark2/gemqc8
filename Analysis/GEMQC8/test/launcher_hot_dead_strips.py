@@ -80,7 +80,7 @@ if __name__ == '__main__':
     time.sleep(1)
 
     #  # Creating folder outside the CMMSW release to put the output files and plots
-    outDirName = "Results_QC8_hot_dead_strips_run_"+args.run_number
+    outDirName = "Results_QC8_hot_dead_strips_run_"+str(args.run_number)
     #---# Remove old version if want to recreate
     if (os.path.exists(resDirPath+outDirName)):
         rmDirCommand = "rm -rf "+outDirName
@@ -105,9 +105,9 @@ if __name__ == '__main__':
 
     # Selecting the correct output file, changing the name and moving to the output folder
     out_name = 'out_run_'
-    for i in range(6-len(args.run_number)):
+    for i in range(6-len(str(args.run_number))):
         out_name = out_name + '0'
-    out_name = out_name + args.run_number + '.root'
+    out_name = out_name + str(args.run_number) + '.root'
 
     mvToDirCommand = "mv hot_dead_strips_" + out_name + " " + resDirPath+outDirName + "/hot_dead_strips_" + out_name
     movingToDir = subprocess.Popen(mvToDirCommand.split(),stdout=subprocess.PIPE,universal_newlines=True,cwd=runPath)
@@ -115,7 +115,7 @@ if __name__ == '__main__':
     time.sleep(1)
 
     # Efficiency computation & output
-    effCommand = "root -l -q " + runPath + "macro_hot_dead_strips.c(" + args.run_number + ",\"" + configTablesPath + "\")"
+    effCommand = "root -l -q " + runPath + "macro_hot_dead_strips.c(" + str(args.run_number) + ",\"" + configTablesPath + "\")"
     efficiency = subprocess.Popen(effCommand.split(),stdout=subprocess.PIPE,universal_newlines=True,cwd=effoutDir)
     while efficiency.poll() is None:
         line = efficiency.stdout.readline()
@@ -125,12 +125,12 @@ if __name__ == '__main__':
     time.sleep(1)
 
     # Moving the output of the root analysis to the folder in GEMQC8/data/..
-    out_name = 'DeadStrips_run' + args.run_number + '_ToDB.csv'
+    out_name = 'DeadStrips_run' + str(args.run_number) + '_ToDB.csv'
     mvToDirCommand = "cp " + effoutDir + "/" + out_name + " " + deadStripsTablesPath + out_name
     movingToDir = subprocess.Popen(mvToDirCommand.split(),stdout=subprocess.PIPE,universal_newlines=True,cwd=runPath)
     movingToDir.communicate()
     time.sleep(1)
-    out_name = 'HotStrips_run' + args.run_number + '_ToDB.csv'
+    out_name = 'HotStrips_run' + str(args.run_number) + '_ToDB.csv'
     mvToDirCommand = "cp " + effoutDir + "/" + out_name + " " + hotStripsTablesPath + out_name
     movingToDir = subprocess.Popen(mvToDirCommand.split(),stdout=subprocess.PIPE,universal_newlines=True,cwd=runPath)
     movingToDir.communicate()

@@ -194,16 +194,21 @@ def getDeadStripsTable(run_num):
     print "\nSuccesfully done!\n"
 
 if __name__ == '__main__':
-    runNumber = sys.argv[1]
-    tableType = sys.argv[2]
-    dateTimeOfRun = sys.argv[3]
-    if tableType == "ConfigurationTable":
-        getConfigurationTable(runNumber,dateTimeOfRun)
-    elif tableType == "AlignmentTable":
-        getAlignmentTable(runNumber)
-    elif tableType == "HotStripsTable":
-        getHotStripsTable(runNumber)
-    elif tableType == "DeadStripsTable":
-        getDeadStripsTable(runNumber)
-    else:
-        print "Wrong name for a table!"
+
+    # Define the parser
+    import argparse
+    parser = argparse.ArgumentParser(description="This script dumps the tables from the GEM production DB")
+    # Positional arguments
+    parser.add_argument("tableType", type=str, choices=["ConfigurationTable","AlignmentTable","HotStripsTable","DeadStripsTable"], help="Specify the table type")
+    parser.add_argument("runNumber", type=int, help="Specify the run number")
+    parser.add_argument("dateTimeOfRun", type=str, help="Specify the date and time of the run. Example: 2019-03-14_09-04")
+    args = parser.parse_args()
+
+    if args.tableType == "ConfigurationTable":
+        getConfigurationTable(args.runNumber,args.dateTimeOfRun)
+    elif args.tableType == "AlignmentTable":
+        getAlignmentTable(args.runNumber)
+    elif args.tableType == "HotStripsTable":
+        getHotStripsTable(args.runNumber)
+    elif args.tableType == "DeadStripsTable":
+        getDeadStripsTable(args.runNumber)

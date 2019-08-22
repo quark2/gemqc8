@@ -118,7 +118,7 @@ if __name__ == '__main__':
   while not(stop_align or step>5):
     cmsRunner(cores)
     #  # Creating folder outside the CMMSW release to put the output files and plots
-    outDirName = "Results_QC8_alignment_run_"+args.run_number
+    outDirName = "Results_QC8_alignment_run_"+str(args.run_number)
     #---# Remove old version if want to recreate
     if (os.path.exists(resDirPath+outDirName)):
       rmDirCommand = "rm -rf "+outDirName
@@ -144,7 +144,7 @@ if __name__ == '__main__':
     out_name = 'out_run_'
     for i in range(6-len(args.run_number)):
       out_name = out_name + '0'
-    out_name = out_name + args.run_number + '.root'
+    out_name = out_name + str(args.run_number) + '.root'
 
     mvToDirCommand = "mv alignment_" + out_name + " " + resDirPath+outDirName + "/alignment_" + out_name
     movingToDir = subprocess.Popen(mvToDirCommand.split(),stdout=subprocess.PIPE,universal_newlines=True,cwd=runPath)
@@ -185,7 +185,7 @@ if __name__ == '__main__':
   cmsRunner(cores)
 
   #  # Creating folder outside the CMMSW release to put the output files and plots
-  outDirName = "Results_QC8_alignment_run_"+args.run_number
+  outDirName = "Results_QC8_alignment_run_"+str(args.run_number)
   #---# Remove old version if want to recreate
   if (os.path.exists(resDirPath+outDirName)):
     rmDirCommand = "rm -rf "+outDirName
@@ -210,7 +210,7 @@ if __name__ == '__main__':
 
   # Selecting the correct output file, changing the name and moving to the output folder
   out_name = 'out_run_'
-  for i in range(6-len(args.run_number)):
+  for i in range(6-len(str(args.run_number))):
     out_name = out_name + '0'
   out_name = out_name + str(args.run_number) + '.root'
 
@@ -220,7 +220,7 @@ if __name__ == '__main__':
   time.sleep(1)
 
   # Alignment computation & output
-  tilttwistCommand = "root -l -q " + runPath + "macro_tilt_twist.c(" + args.run_number + ",\"" + runPath + "\",\"" + alignmentTablesPath + "\")"
+  tilttwistCommand = "root -l -q " + runPath + "macro_tilt_twist.c(" + str(args.run_number) + ",\"" + runPath + "\",\"" + alignmentTablesPath + "\")"
   tilttwist = subprocess.Popen(tilttwistCommand.split(),stdout=subprocess.PIPE,universal_newlines=True,cwd=tilttwistoutDir)
   while tilttwist.poll() is None:
     line = tilttwist.stdout.readline()
