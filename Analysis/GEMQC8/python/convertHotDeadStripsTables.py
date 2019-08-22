@@ -37,7 +37,7 @@ def convertHotDead(run_number,typeOfTable):
 	outfile.close()
 
 	print("\n")
-	print("Success: converted " + typeOfTable + " strips table for run " + run_number)
+	print("Success: converted " + typeOfTable + " strips table for run " + str(run_number))
 	print("\n")
 
 if __name__ == '__main__':
