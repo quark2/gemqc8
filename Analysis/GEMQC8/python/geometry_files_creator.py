@@ -23,7 +23,7 @@ def geomMaker(run_number, AlignOption):
 	      0,0,0,0,0]
 
 
-	if (AlignOption == "--forAlignment"):
+	if (AlignOption == "forAlignment"):
 		infileName = alignmentTablesPath + "StandAlignmentValues_run" + str(run_number) + ".csv"
 
 		if (os.path.exists(infileName)):
@@ -50,7 +50,7 @@ def geomMaker(run_number, AlignOption):
 						dx[SCnumber] = float(line.split(',')[1])
 						rz[SCnumber] = float(line.split(',')[6])
 
-	if (AlignOption == "--yesAlignment"):
+	if (AlignOption == "yesAlignment"):
 		infileName = alignmentTablesPath + "StandAlignmentValues_run" + str(run_number) + ".csv"
 
 		if (os.path.exists(infileName)):

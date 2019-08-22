@@ -13,7 +13,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="QC8 data analysis step 5. Efficiency calculation with track-based analysis. For any doubt: https://twiki.cern.ch/twiki/bin/view/CMS/GEMCosmicRayAnalysis")
     # Positional arguments
     parser.add_argument("run_number", type=int, help="Specify the run number")
-    parser.add_argument("alignmentDone", type=str, choices=["--noAlignment","--yesAlignment"], help="Specify if there is alignment done or not")
+    parser.add_argument("alignmentDone", type=str, choices=["noAlignment","yesAlignment"], help="Specify if there is alignment done or not")
     args = parser.parse_args()
 
     # Different paths definition
@@ -30,7 +30,7 @@ if __name__ == '__main__':
     import geometry_files_creator
 
     # Retrieve start date and time of the run
-    fpath =  "/eos/cms/store/group/dpg_gem/comm_gem/QC8_Commissioning/run{:06d}/".format(int(args.args.run_number))
+    fpath =  "/eos/cms/store/group/dpg_gem/comm_gem/QC8_Commissioning/run{:06d}/".format(int(args.run_number))
     for x in os.listdir(fpath):
         if x.endswith("ls0001_allindex.raw"):
             file0name = x

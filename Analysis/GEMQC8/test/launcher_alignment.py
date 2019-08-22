@@ -112,7 +112,7 @@ if __name__ == '__main__':
   cores = 8
 
   # Generate geometry files
-  geometry_files_creator.geomMaker(args.run_number, "--noAlignment")
+  geometry_files_creator.geomMaker(args.run_number, "noAlignment")
   time.sleep(1)
 
   while not(stop_align or step>5):
@@ -178,7 +178,7 @@ if __name__ == '__main__':
     step += 1
 
     # Generate geometry files
-    geometry_files_creator.geomMaker(args.run_number, "--forAlignment")
+    geometry_files_creator.geomMaker(args.run_number, "forAlignment")
     time.sleep(1)
 
   # Running the CMSSW code for the last step of alignment
