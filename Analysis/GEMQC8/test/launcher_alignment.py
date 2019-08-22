@@ -142,7 +142,7 @@ if __name__ == '__main__':
 
     # Selecting the correct output file, changing the name and moving to the output folder
     out_name = 'out_run_'
-    for i in range(6-len(args.run_number)):
+    for i in range(6-len(str(args.run_number))):
       out_name = out_name + '0'
     out_name = out_name + str(args.run_number) + '.root'
 
