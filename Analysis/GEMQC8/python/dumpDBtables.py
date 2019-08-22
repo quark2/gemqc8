@@ -201,7 +201,7 @@ if __name__ == '__main__':
     # Positional arguments
     parser.add_argument("tableType", type=str, choices=["ConfigurationTable","AlignmentTable","HotStripsTable","DeadStripsTable"], help="Specify the table type")
     parser.add_argument("runNumber", type=int, help="Specify the run number")
-    parser.add_argument("dateTimeOfRun", type=str, help="Specify the date and time of the run. Example: 2019-03-14_09-04")
+    parser.add_argument("dateTimeOfRun", type=str, help="Specify the date and time of the run as YYYY-MM-DD_hh-mm-ss. Example: 2019-03-14_09-04-00")
     args = parser.parse_args()
 
     if args.tableType == "ConfigurationTable":
