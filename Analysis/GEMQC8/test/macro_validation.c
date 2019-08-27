@@ -673,6 +673,7 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 			recHits2D[row*2]->GetYaxis()->SetBinLabel(y+1, to_string(y+1).c_str());
 		}
 		recHits2D[row*2]->Draw("colz");
+		recHits2D[row*2]->Write(namename.c_str());
 		namename = "recHits_Row_" + to_string(row+1) + "_B.png";
 		Canvas->SaveAs(namename.c_str());
 		Canvas->Clear();
@@ -686,6 +687,7 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 			recHits2D[row*2+1]->GetYaxis()->SetBinLabel(y+1, to_string(y+1).c_str());
 		}
 		recHits2D[(row*2)+1]->Draw("colz");
+		recHits2D[(row*2)+1]->Write(namename.c_str());
 		namename = "recHits_Row_" + to_string(row+1) + "_T.png";
 		Canvas->SaveAs(namename.c_str());
 		Canvas->Clear();
@@ -705,6 +707,7 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 			assocRecHits2D[row*2]->GetYaxis()->SetBinLabel(y+1, to_string(y+1).c_str());
 		}
 		assocRecHits2D[row*2]->Draw("colz");
+		assocRecHits2D[row*2]->Write(namename.c_str());
 		namename = "associatedRecHits_Row_" + to_string(row+1) + "_B.png";
 		Canvas->SaveAs(namename.c_str());
 		Canvas->Clear();
@@ -718,6 +721,7 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 			assocRecHits2D[row*2+1]->GetYaxis()->SetBinLabel(y+1, to_string(y+1).c_str());
 		}
 		assocRecHits2D[(row*2)+1]->Draw("colz");
+		assocRecHits2D[(row*2)+1]->Write(namename.c_str());
 		namename = "associatedRecHits_Row_" + to_string(row+1) + "_T.png";
 		Canvas->SaveAs(namename.c_str());
 		Canvas->Clear();
@@ -737,6 +741,7 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 			nonAssocRecHits2D[row*2]->GetYaxis()->SetBinLabel(y+1, to_string(y+1).c_str());
 		}
 		nonAssocRecHits2D[row*2]->Draw("colz");
+		nonAssocRecHits2D[row*2]->Write(namename.c_str());
 		namename = "nonAssociatedRecHits_Row_" + to_string(row+1) + "_B.png";
 		Canvas->SaveAs(namename.c_str());
 		Canvas->Clear();
@@ -750,6 +755,7 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 			nonAssocRecHits2D[row*2+1]->GetYaxis()->SetBinLabel(y+1, to_string(y+1).c_str());
 		}
 		nonAssocRecHits2D[(row*2)+1]->Draw("colz");
+		nonAssocRecHits2D[(row*2)+1]->Write(namename.c_str());
 		namename = "nonAssociatedRecHits_Row_" + to_string(row+1) + "_T.png";
 		Canvas->SaveAs(namename.c_str());
 		Canvas->Clear();
@@ -777,6 +783,7 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 			eff2D[row*2]->GetYaxis()->SetBinLabel(y+1, to_string(y+1).c_str());
 		}
 		eff2D[row*2]->Draw("colz TEXT0");
+		eff2D[row*2]->Write(namename.c_str());
 		col_1_2->Draw("SAME");
 		col_2_3->Draw("SAME");
 		namename = "Efficiency_Row_" + to_string(row+1) + "_B.png";
@@ -798,6 +805,7 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 			eff2D[row*2+1]->GetYaxis()->SetBinLabel(y+1, to_string(y+1).c_str());
 		}
 		eff2D[(row*2)+1]->Draw("colz TEXT0");
+		eff2D[(row*2)+1]->Write(namename.c_str());
 		col_1_2->Draw("SAME");
 		col_2_3->Draw("SAME");
 		namename = "Efficiency_Row_" + to_string(row+1) + "_T.png";
