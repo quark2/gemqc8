@@ -118,35 +118,51 @@ for i in xrange(len(SuperChType)):
 # Config importation & settings
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(options.eventsPerJob))
 
-#fpath =  "/eos/cms/store/group/dpg_gem/comm_gem/QC8_Commissioning/run{:06d}/".format(int(run_number))
-fpath =  "/data/bigdisk/GEM-Data-Taking/GE11_QC8/Cosmics/run{:06d}/".format(int(run_number))
-
-for x in os.listdir(fpath):
-    if x.endswith("ls0001_index000000.raw"):
-        dataFileExtension = ".raw"
-        uFEDKit = True
-        break
-    elif x.endswith("chunk_000000.dat"):
-        dataFileExtension = ".dat"
-        uFEDKit = False
-        break
-    else:
-        print "Check the data files... First file (at least) is missing!"
-run_number = options.runNum
-#fpath = "/eos/cms/store/group/dpg_gem/comm_gem/QC8_Commissioning/run%06i"%(run_number)
-fpath = "/data/bigdisk/GEM-Data-Taking/GE11_QC8/Cosmics/run%06i"%(run_number)
-if options.inputPath != "": fpath = options.inputPath
-fpath = '/data/bigdisk/GEM-Data-Taking/GE11_QC8/Cosmics/'
-
 # Input source
 listSrc = []
+run_number = options.runNum
+uFEDKit = False
 
 if options.inputMultiFiles == "": 
+  #fpath =  "/eos/cms/store/group/dpg_gem/comm_gem/QC8_Commissioning/run{:06d}/".format(int(run_number))
+  fpath =  "/data/bigdisk/GEM-Data-Taking/GE11_QC8/Cosmics/run{:06d}/".format(int(run_number))
+  
+  for x in os.listdir(fpath):
+      if x.endswith("ls0001_index000000.raw"):
+          dataFileExtension = ".raw"
+          uFEDKit = True
+          break
+      elif x.endswith("chunk_000000.dat"):
+          dataFileExtension = ".dat"
+          uFEDKit = False
+          break
+      else:
+          print "Check the data files... First file (at least) is missing!"
+  
+  #fpath = "/eos/cms/store/group/dpg_gem/comm_gem/QC8_Commissioning/run%06i"%(run_number)
+  fpath = "/data/bigdisk/GEM-Data-Taking/GE11_QC8/Cosmics/run%06i"%(run_number)
+  if options.inputPath != "": fpath = options.inputPath
+  fpath = '/data/bigdisk/GEM-Data-Taking/GE11_QC8/Cosmics/'
+  
   listSrcName = [ s for s in os.listdir(fpath) if s.endswith(".dat") and s.startswith("run%06i"%run_number) ]
   listSrcName = listSrcName[ 0:1 ]
   listSrc = [ "file:" + os.path.join(fpath, s) for s in listSrcName ]
 else: 
-  listSrc = [ s for s in options.inputMultiFiles.split(",") if s != "" ]
+  strListInput = options.inputMultiFiles
+  
+  if strListInput.endswith(".txt"): 
+    with open(strListInput) as fIn: strListInput = fIn.read().splitlines()[ 0 ]
+  
+  listSrc = [ s for s in strListInput.split(",") if s != "" ]
+  
+  nNumDat = len([ s for s in listSrc if s.endswith(".dat") ])
+  nNumRaw = len([ s for s in listSrc if s.endswith(".raw") ])
+  
+  if nNumDat != 0 and nNumRaw != 0: 
+    sys.stderr.write("FATAL ERROR: There is both of two types of input files!\n")
+    sys.exit(1)
+  
+  uFEDKit = ( nNumRaw > 0 )
 
 #print(listSrcName)
 
