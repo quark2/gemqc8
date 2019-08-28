@@ -212,6 +212,32 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 		}
 	}
 
+	// Getting associated rechHits per layer histrogram
+
+	TH3D *nonAssocRecHitsPerLayer = (TH3D*)infile->Get("ValidationQC8/nonAssociatedHits2DPerLayer");
+
+	// Associated rechHits plots per layer
+
+	TH2D *nonAssocRecHits2D[10];
+	for (int row=0; row<5; row++)
+	{
+		namename = "nonAssociatedRecHits_row_" + to_string(row+1) + "_B";
+		nonAssocRecHits2D[row*2] = new TH2D(namename.c_str(),"",2000,-100,100,8,-0.5,7.5);
+		namename = "nonAssociatedRecHits_row_" + to_string(row+1) + "_T";
+		nonAssocRecHits2D[(row*2)+1] = new TH2D(namename.c_str(),"",2000,-100,100,8,-0.5,7.5);
+	}
+
+	for (int layer=0; layer<10; layer++)
+	{
+		for (int eta=1; eta<=8; eta++)
+		{
+			for (int phi=1; phi<=2000; phi++)
+			{
+				nonAssocRecHits2D[layer]->SetBinContent(phi,eta,nonAssocRecHitsPerLayer->GetBinContent(phi,eta,layer+1));
+			}
+		}
+	}
+
 	// Getting clusterSize 3D histogram
 
 	TH3D *clusterSize3D = (TH3D*)infile->Get("ValidationQC8/clusterSize");
@@ -234,11 +260,11 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 		}
 	}
 
-	// Getting clusterSize 3D histogram
+	// Getting associated hits clusterSize 3D histogram
 
 	TH3D *assocHitsClusterSize3D = (TH3D*)infile->Get("ValidationQC8/associatedHitsClusterSize");
 
-	// cluster size plots per chamber and per eta partition
+	// Associated hits cluster size plots per chamber and per eta partition
 
 	TH1D *assocHitsClusterSize1D[30][8];
 
@@ -256,16 +282,38 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 		}
 	}
 
+	// Getting non associated hits clusterSize 3D histogram
+
+	TH3D *nonAssocHitsClusterSize3D = (TH3D*)infile->Get("ValidationQC8/nonAssociatedHitsClusterSize");
+
+	// Non associated hits cluster size plots per chamber and per eta partition
+
+	TH1D *nonAssocHitsClusterSize1D[30][8];
+
+	for (unsigned int ch=0; ch<30; ch++)
+	{
+		for (unsigned int eta=0; eta<8; eta++)
+		{
+			sprintf(name,"nonAssocHitsClusterSize_ch_%u_eta_%u",ch,(eta+1));
+			nonAssocHitsClusterSize1D[ch][eta] = new TH1D(name,"",20,0,20);
+
+			for (int cls=0; cls<20; cls++)
+			{
+				nonAssocHitsClusterSize1D[ch][eta]->SetBinContent((cls+1),nonAssocHitsClusterSize3D->GetBinContent(ch+1,eta+1,cls+1));
+			}
+		}
+	}
+
 	// Open stand configuration file for present run & get names + positions of chambers
 
 	string configName = dataDir + "StandConfigurationTables/StandGeometryConfiguration_run" + to_string(run) + ".csv";
 	ifstream standConfigFile (configName);
 
 	string line, split, comma = ",", slash = "/";
-	vector<string> chamberName;
+	vector<string> chamberName, chamberNamePlot;
 	int ChPos = 0;
 	vector<int> chamberPos;
-	size_t pos = 0;
+	size_t pos = 0, pos_slash = 0;
 
 	if (standConfigFile.is_open())
 	{
@@ -275,6 +323,8 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 			split = line.substr(0, pos);
 			if (split == "CH_SERIAL_NUMBER") continue;
 			chamberName.push_back(split);
+			pos_slash = split.find(slash);
+			chamberNamePlot.push_back(split.substr(0,pos_slash)+split.substr(pos_slash+slash.length(),pos));
 			line.erase(0, pos + comma.length());
 
 			pos = line.find(comma);
@@ -449,6 +499,7 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 		denom1D[c]->SetTitle(namename.c_str());
 		denom1D[c]->GetXaxis()->SetTitle("VFAT");
 		denom1D[c]->GetYaxis()->SetTitle("Counts");
+		namename = "Denom_" + chamberNamePlot[i] + "_in_position_" + to_string(chamberPos[i]) + "_run_" + to_string(run);
 		denom1D[c]->Write(namename.c_str());
 		denom1D[c]->SetLineColor(kRed);
 		denom1D[c]->Draw();
@@ -456,6 +507,7 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 		num1D[c]->SetTitle(namename.c_str());
 		num1D[c]->GetXaxis()->SetTitle("VFAT");
 		num1D[c]->GetYaxis()->SetTitle("Counts");
+		namename = "Num_" + chamberNamePlot[i] + "_in_position_" + to_string(chamberPos[i]);
 		num1D[c]->Write(namename.c_str());
 		namename = "Num_Denom_" + chamberName[i] + "_in_position_" + to_string(chamberPos[i]) + "_run_" + to_string(run);
 		num1D[c]->SetTitle(namename.c_str());
@@ -475,6 +527,7 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 		eff1D[c]->GetYaxis()->SetRangeUser(min_eff,max_eff);
 		eff1D[c]->SetMarkerStyle(20);
 		eff1D[c]->Draw();
+		namename = "Efficiency_" + chamberNamePlot[i] + "_in_position_" + to_string(chamberPos[i]) + "_run_" + to_string(run);
 		eff1D[c]->Write(namename.c_str());
 		TF1 *avgEffFit = new TF1("avgEffFit","pol0",0,24);
 		eff1D[c]->Fit(avgEffFit,"NOQ");
@@ -533,6 +586,7 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 			clusterSize1D[c][eta]->GetXaxis()->SetTitle("ClusterSize");
 			clusterSize1D[c][eta]->GetYaxis()->SetTitle("Counts");
 			clusterSize1D[c][eta]->Draw();
+			namename = "ClusterSize_" + chamberNamePlot[i] + "_in_position_" + to_string(chamberPos[i]) + "_eta_" + to_string(eta+1) + "_run_" + to_string(run);
 			clusterSize1D[c][eta]->Write(namename.c_str());
 			namename = "outPlots_Chamber_Pos_" + to_string(chamberPos[i]) + "/ClusterSize_Ch_Pos_" + to_string(chamberPos[i]) + "_eta_" + to_string(eta+1) + ".png";
 			Canvas->SaveAs(namename.c_str());
@@ -543,13 +597,30 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 
 		for (unsigned int eta=0; eta<8; eta++)
 		{
-			namename = "AsssociatedHitsClusterSize_" + chamberName[i] + "_in_position_" + to_string(chamberPos[i]) + "_eta_" + to_string(eta+1) + "_run_" + to_string(run);
+			namename = "AssociatedHitsClusterSize_" + chamberName[i] + "_in_position_" + to_string(chamberPos[i]) + "_eta_" + to_string(eta+1) + "_run_" + to_string(run);
 			assocHitsClusterSize1D[c][eta]->SetTitle(namename.c_str());
 			assocHitsClusterSize1D[c][eta]->GetXaxis()->SetTitle("ClusterSize");
 			assocHitsClusterSize1D[c][eta]->GetYaxis()->SetTitle("Counts");
 			assocHitsClusterSize1D[c][eta]->Draw();
+			namename = "AssociatedHitsClusterSize_" + chamberNamePlot[i] + "_in_position_" + to_string(chamberPos[i]) + "_eta_" + to_string(eta+1) + "_run_" + to_string(run);
 			assocHitsClusterSize1D[c][eta]->Write(namename.c_str());
-			namename = "outPlots_Chamber_Pos_" + to_string(chamberPos[i]) + "/AsssociatedHitsClusterSize_Ch_Pos_" + to_string(chamberPos[i]) + "_eta_" + to_string(eta+1) + ".png";
+			namename = "outPlots_Chamber_Pos_" + to_string(chamberPos[i]) + "/AssociatedHitsClusterSize_Ch_Pos_" + to_string(chamberPos[i]) + "_eta_" + to_string(eta+1) + ".png";
+			Canvas->SaveAs(namename.c_str());
+			Canvas->Clear();
+		}
+
+		// Plotting clusterSize of non associated recHits per chamber per eta
+
+		for (unsigned int eta=0; eta<8; eta++)
+		{
+			namename = "NonAssociatedHitsClusterSize_" + chamberName[i] + "_in_position_" + to_string(chamberPos[i]) + "_eta_" + to_string(eta+1) + "_run_" + to_string(run);
+			nonAssocHitsClusterSize1D[c][eta]->SetTitle(namename.c_str());
+			nonAssocHitsClusterSize1D[c][eta]->GetXaxis()->SetTitle("ClusterSize");
+			nonAssocHitsClusterSize1D[c][eta]->GetYaxis()->SetTitle("Counts");
+			nonAssocHitsClusterSize1D[c][eta]->Draw();
+			namename = "NonAssociatedHitsClusterSize_" + chamberNamePlot[i] + "_in_position_" + to_string(chamberPos[i]) + "_eta_" + to_string(eta+1) + "_run_" + to_string(run);
+			nonAssocHitsClusterSize1D[c][eta]->Write(namename.c_str());
+			namename = "outPlots_Chamber_Pos_" + to_string(chamberPos[i]) + "/NonAssociatedHitsClusterSize_Ch_Pos_" + to_string(chamberPos[i]) + "_eta_" + to_string(eta+1) + ".png";
 			Canvas->SaveAs(namename.c_str());
 			Canvas->Clear();
 		}
@@ -566,6 +637,7 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 			digi2D[c]->GetYaxis()->SetBinLabel(y+1, to_string(y+1).c_str());
 		}
 		digi2D[c]->Draw("colz");
+		namename = "Digi_" + chamberNamePlot[i] + "_in_position_" + to_string(chamberPos[i]) + "_run_" + to_string(run);
 		digi2D[c]->Write(namename.c_str());
 		namename = "outPlots_Chamber_Pos_" + to_string(chamberPos[i]) + "/Digi_Ch_Pos_" + to_string(chamberPos[i]) + ".png";
 		Canvas->SaveAs(namename.c_str());
@@ -579,6 +651,7 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 		nDigis[c]->GetXaxis()->SetTitle("Digi Multiplicity");
 		nDigis[c]->GetYaxis()->SetTitle("Counts");
 		nDigis[c]->Draw();
+		namename = "NumberOfDigis_" + chamberNamePlot[i] + "_in_position_" + to_string(chamberPos[i]) + "_run_" + to_string(run);
 		nDigis[c]->Write(namename.c_str());
 		namename = "outPlots_Chamber_Pos_" + to_string(chamberPos[i]) + "/NumberOfDigis_Ch_Pos_" + to_string(chamberPos[i]) + ".png";
 		Canvas->SaveAs(namename.c_str());
@@ -600,6 +673,7 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 			recHits2D[row*2]->GetYaxis()->SetBinLabel(y+1, to_string(y+1).c_str());
 		}
 		recHits2D[row*2]->Draw("colz");
+		recHits2D[row*2]->Write(namename.c_str());
 		namename = "recHits_Row_" + to_string(row+1) + "_B.png";
 		Canvas->SaveAs(namename.c_str());
 		Canvas->Clear();
@@ -613,6 +687,7 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 			recHits2D[row*2+1]->GetYaxis()->SetBinLabel(y+1, to_string(y+1).c_str());
 		}
 		recHits2D[(row*2)+1]->Draw("colz");
+		recHits2D[(row*2)+1]->Write(namename.c_str());
 		namename = "recHits_Row_" + to_string(row+1) + "_T.png";
 		Canvas->SaveAs(namename.c_str());
 		Canvas->Clear();
@@ -632,6 +707,7 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 			assocRecHits2D[row*2]->GetYaxis()->SetBinLabel(y+1, to_string(y+1).c_str());
 		}
 		assocRecHits2D[row*2]->Draw("colz");
+		assocRecHits2D[row*2]->Write(namename.c_str());
 		namename = "associatedRecHits_Row_" + to_string(row+1) + "_B.png";
 		Canvas->SaveAs(namename.c_str());
 		Canvas->Clear();
@@ -645,7 +721,42 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 			assocRecHits2D[row*2+1]->GetYaxis()->SetBinLabel(y+1, to_string(y+1).c_str());
 		}
 		assocRecHits2D[(row*2)+1]->Draw("colz");
+		assocRecHits2D[(row*2)+1]->Write(namename.c_str());
 		namename = "associatedRecHits_Row_" + to_string(row+1) + "_T.png";
+		Canvas->SaveAs(namename.c_str());
+		Canvas->Clear();
+	}
+
+	// Plots of non associsated recHits per layer
+
+	for (int row=0; row<5; row++)
+	{
+		namename = "nonAssociatedRecHits_Row_" + to_string(row+1) + "_B" + "_run_" + to_string(run);
+		nonAssocRecHits2D[row*2]->SetTitle(namename.c_str());
+		nonAssocRecHits2D[row*2]->SetStats(0);
+		nonAssocRecHits2D[row*2]->GetXaxis()->SetTitle("x [cm]");
+		nonAssocRecHits2D[row*2]->GetYaxis()->SetTitle("#eta partition");
+		for (int y = 0; y < 8; y++)
+		{
+			nonAssocRecHits2D[row*2]->GetYaxis()->SetBinLabel(y+1, to_string(y+1).c_str());
+		}
+		nonAssocRecHits2D[row*2]->Draw("colz");
+		nonAssocRecHits2D[row*2]->Write(namename.c_str());
+		namename = "nonAssociatedRecHits_Row_" + to_string(row+1) + "_B.png";
+		Canvas->SaveAs(namename.c_str());
+		Canvas->Clear();
+		namename = "nonAssociatedRecHits_Row_" + to_string(row+1) + "_T" + "_run_" + to_string(run);
+		nonAssocRecHits2D[(row*2)+1]->SetTitle(namename.c_str());
+		nonAssocRecHits2D[(row*2)+1]->SetStats(0);
+		nonAssocRecHits2D[(row*2)+1]->GetXaxis()->SetTitle("x [cm]");
+		nonAssocRecHits2D[(row*2)+1]->GetYaxis()->SetTitle("#eta partition");
+		for (int y = 0; y < 8; y++)
+		{
+			nonAssocRecHits2D[row*2+1]->GetYaxis()->SetBinLabel(y+1, to_string(y+1).c_str());
+		}
+		nonAssocRecHits2D[(row*2)+1]->Draw("colz");
+		nonAssocRecHits2D[(row*2)+1]->Write(namename.c_str());
+		namename = "nonAssociatedRecHits_Row_" + to_string(row+1) + "_T.png";
 		Canvas->SaveAs(namename.c_str());
 		Canvas->Clear();
 	}
@@ -672,6 +783,7 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 			eff2D[row*2]->GetYaxis()->SetBinLabel(y+1, to_string(y+1).c_str());
 		}
 		eff2D[row*2]->Draw("colz TEXT0");
+		eff2D[row*2]->Write(namename.c_str());
 		col_1_2->Draw("SAME");
 		col_2_3->Draw("SAME");
 		namename = "Efficiency_Row_" + to_string(row+1) + "_B.png";
@@ -693,6 +805,7 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 			eff2D[row*2+1]->GetYaxis()->SetBinLabel(y+1, to_string(y+1).c_str());
 		}
 		eff2D[(row*2)+1]->Draw("colz TEXT0");
+		eff2D[(row*2)+1]->Write(namename.c_str());
 		col_1_2->Draw("SAME");
 		col_2_3->Draw("SAME");
 		namename = "Efficiency_Row_" + to_string(row+1) + "_T.png";
@@ -747,6 +860,35 @@ void macro_validation(int run, string dataDir, string startDateTimeRun)
 	namename = "Average_Efficiency_Per_Chamber_run_" + to_string(run) + ".png";
 	Canvas->SaveAs(namename.c_str());
 	Canvas->Clear();
+
+	// Avg Efficiency Per Chamber results in csv files
+
+	ofstream avgEffFile;
+	string AvgEffOutFile = "Average_Efficiency_Per_Chamber.csv";
+	avgEffFile.open(AvgEffOutFile);
+	double eff_value, error_value;
+	string entry = "";
+
+	entry = "RunNumber," + to_string(run) + "\n";
+	avgEffFile << entry;
+	entry = "PositionCMSSW,Position,Chamber,Efficiency,ErrorEfficiency\n";
+	avgEffFile << entry;
+
+	for (unsigned int i=0; i<chamberPos.size(); i++)
+	{
+		int ch = chamberPos[i];
+		int Position = AvgEffPerCh->GetX()[ch];
+		int Row = int((ch%10)/2)+1;
+		int Col = int(ch/10)+1;
+		string TopBottom;
+		if (ch%2 == 0) TopBottom = "B";
+		if (ch%2 == 1) TopBottom = "T";
+		eff_value = AvgEffPerCh->GetY()[ch];
+		error_value = AvgEffPerCh->GetErrorY(ch);
+		entry = to_string(Position) + "," + to_string(Row) + "/" + to_string(Col) + "/" + TopBottom + "," + chamberName[i] + "," + to_string(eff_value) + "," + to_string(error_value) + "\n";
+		avgEffFile << entry;
+	}
+	avgEffFile.close();
 
 	standConfigFile.close();
 	infile->Close();

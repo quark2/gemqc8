@@ -13,8 +13,8 @@ python launcher_hot_dead_strips.py #run_number#
 python launcher_certify_events.py #run_number#
 python launcher_fast_efficiency.py #run_number#
 python launcher_alignment.py #run_number#
-python launcher_validation.py #run_number# --noAlignment
-python launcher_validation.py #run_number# --yesAlignment
+python launcher_validation.py #run_number# noAlignment
+python launcher_validation.py #run_number# yesAlignment
 ```
 
 If you want to run simulations, download the package following these instructions:

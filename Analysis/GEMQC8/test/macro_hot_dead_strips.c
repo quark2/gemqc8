@@ -97,11 +97,11 @@ void macro_hot_dead_strips(int run, string configDir)
 	string configName = configDir + "StandGeometryConfiguration_run" + to_string(run) + ".csv";
 	ifstream standConfigFile (configName);
 
-	string line, split, comma = ",", slash = "/";
-	vector<string> chamberName;
+  string line, split, comma = ",", slash = "/";
+	vector<string> chamberName, chamberNamePlot;
 	int ChPos = 0;
 	vector<int> chamberPos;
-	size_t pos = 0;
+	size_t pos = 0, pos_slash = 0;
 
 	if (standConfigFile.is_open())
 	{
@@ -111,6 +111,8 @@ void macro_hot_dead_strips(int run, string configDir)
 			split = line.substr(0, pos);
 			if (split == "CH_SERIAL_NUMBER") continue;
 			chamberName.push_back(split);
+			pos_slash = split.find(slash);
+			chamberNamePlot.push_back(split.substr(0,pos_slash)+split.substr(pos_slash+slash.length(),pos));
 			line.erase(0, pos + comma.length());
 
 			pos = line.find(comma);
@@ -177,6 +179,7 @@ void macro_hot_dead_strips(int run, string configDir)
     if ( (GaussFit->GetParameter(1) + nsigmas*GaussFit->GetParameter(2)) > 0 )
     	HotStripLimitValue[c] = int(GaussFit->GetParameter(1) + nsigmas*GaussFit->GetParameter(2)); // Centroid of the gaussian + n sigmas
 
+    namename = "Digi_PerStrip_PerCh_" + chamberNamePlot[i] + "_in_position_" + to_string(chamberPos[i]) + "_run_" + to_string(run);
     digisPerStripPerCh[c]->Write(namename.c_str());
     namename = "outPlots_Chamber_Pos_" + to_string(chamberPos[i]) + "/Digi_PerStrip_PerCh_" + to_string(chamberPos[i]) + ".png";
     Canvas->SaveAs(namename.c_str());
@@ -266,6 +269,7 @@ void macro_hot_dead_strips(int run, string configDir)
     digi2D[c]->GetXaxis()->SetTitle("Strip Number");
     digi2D[c]->GetYaxis()->SetTitle("ieta");
     digi2D[c]->Draw("colz");
+    namename = "Digi_" + chamberNamePlot[i] + "_in_position_" + to_string(chamberPos[i]) + "_run_" + to_string(run);
     digi2D[c]->Write(namename.c_str());
     namename = "outPlots_Chamber_Pos_" + to_string(chamberPos[i]) + "/Digi_Ch_Pos_" + to_string(chamberPos[i]) + ".png";
     Canvas->SaveAs(namename.c_str());

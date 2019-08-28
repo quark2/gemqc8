@@ -5,7 +5,7 @@ def convertAlignment(run_number,typeOfTable):
 
 	if (typeOfTable == "alignment"):
 		alignmentTablesPath = os.path.abspath("convertTables.py").split('QC8Test')[0] + 'QC8Test/src/Analysis/GEMQC8/data/StandAligmentTables/'
-		infileName = alignmentTablesPath + "StandAlignmentValues_run" + run_number + "_ToDB.csv"
+		infileName = alignmentTablesPath + "StandAlignmentValues_run" + str(run_number) + "_ToDB.csv"
 	else: print("This mask type does not exist!")
 
 	with open(infileName) as infile:
@@ -34,7 +34,7 @@ def convertAlignment(run_number,typeOfTable):
 	outfile.close()
 
 	print("\n")
-	print("Success: converted " + typeOfTable + " strips table for run " + run_number)
+	print("Success: converted " + typeOfTable + " strips table for run " + str(run_number))
 	print("\n")
 
 if __name__ == '__main__':

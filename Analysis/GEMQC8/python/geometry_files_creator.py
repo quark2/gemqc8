@@ -13,7 +13,7 @@ def geomMaker(run_number, AlignOption):
 	import configureRun_cfi as runConfig
 
 	if (runConfig.RunNumber != int(run_number)):
-		sys.exit('configureRun_cfi file has something wrong: run rumber not matching... Check it: ' + run_number)
+		sys.exit('configureRun_cfi file has something wrong: run rumber not matching... Check it: ' + str(run_number))
 
 	dx = [0,0,0,0,0,\
 	      0,0,0,0,0,\
@@ -23,8 +23,8 @@ def geomMaker(run_number, AlignOption):
 	      0,0,0,0,0]
 
 
-	if (AlignOption == "--forAlignment"):
-		infileName = alignmentTablesPath + "StandAlignmentValues_run" + run_number + ".csv"
+	if (AlignOption == "forAlignment"):
+		infileName = alignmentTablesPath + "StandAlignmentValues_run" + str(run_number) + ".csv"
 
 		if (os.path.exists(infileName)):
 			with open(infileName) as infile:
@@ -50,8 +50,8 @@ def geomMaker(run_number, AlignOption):
 						dx[SCnumber] = float(line.split(',')[1])
 						rz[SCnumber] = float(line.split(',')[6])
 
-	if (AlignOption == "--yesAlignment"):
-		infileName = alignmentTablesPath + "StandAlignmentValues_run" + run_number + ".csv"
+	if (AlignOption == "yesAlignment"):
+		infileName = alignmentTablesPath + "StandAlignmentValues_run" + str(run_number) + ".csv"
 
 		if (os.path.exists(infileName)):
 			with open(infileName) as infile:
@@ -107,7 +107,7 @@ def geomMaker(run_number, AlignOption):
 						outfile.write(line)
 
 	print("\n")
-	print("Success: geometry files created for run " + run_number)
+	print("Success: geometry files created for run " + str(run_number))
 	print("\n")
 
 if __name__ == '__main__':

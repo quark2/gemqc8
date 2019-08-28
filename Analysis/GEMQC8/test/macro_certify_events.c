@@ -93,11 +93,11 @@ void macro_certify_events(int run, string configDir)
 	string configName = configDir + "StandGeometryConfiguration_run" + to_string(run) + ".csv";
 	ifstream standConfigFile (configName);
 
-	string line, split, comma = ",", slash = "/";
-	vector<string> chamberName;
+  string line, split, comma = ",", slash = "/";
+	vector<string> chamberName, chamberNamePlot;
 	int ChPos = 0;
 	vector<int> chamberPos;
-	size_t pos = 0;
+	size_t pos = 0, pos_slash = 0;
 
 	if (standConfigFile.is_open())
 	{
@@ -107,6 +107,8 @@ void macro_certify_events(int run, string configDir)
 			split = line.substr(0, pos);
 			if (split == "CH_SERIAL_NUMBER") continue;
 			chamberName.push_back(split);
+			pos_slash = split.find(slash);
+			chamberNamePlot.push_back(split.substr(0,pos_slash)+split.substr(pos_slash+slash.length(),pos));
 			line.erase(0, pos + comma.length());
 
 			pos = line.find(comma);
@@ -154,6 +156,7 @@ void macro_certify_events(int run, string configDir)
 		NdigisPerChVsEvt[c]->GetYaxis()->SetTitle("nDigis");
 		NdigisPerChVsEvt[c]->GetXaxis()->SetRangeUser(0,nTotEvents);
 		NdigisPerChVsEvt[c]->Draw();
+    namename = "NdigisVsEvt_" + chamberNamePlot[i] + "_in_position_" + to_string(chamberPos[i]) + "_run_" + to_string(run);
 		NdigisPerChVsEvt[c]->Write(namename.c_str());
 		namename = "NdigisVsEvt_Ch_Pos_" + to_string(chamberPos[i]) + ".png";
 		Canvas->SaveAs(namename.c_str());
@@ -165,6 +168,7 @@ void macro_certify_events(int run, string configDir)
 		NdigisPerChDistribution[c]->GetXaxis()->SetTitle("nDigis");
 		NdigisPerChDistribution[c]->GetYaxis()->SetTitle("Counts");
 		NdigisPerChDistribution[c]->Draw();
+    namename = "NdigisDistribution_" + chamberNamePlot[i] + "_in_position_" + to_string(chamberPos[i]) + "_run_" + to_string(run);
 		NdigisPerChDistribution[c]->Write(namename.c_str());
 		namename = "NdigisDistribution_Ch_Pos_" + to_string(chamberPos[i]) + ".png";
 		Canvas->SaveAs(namename.c_str());
@@ -177,6 +181,7 @@ void macro_certify_events(int run, string configDir)
 		NrecHitsPerChVsEvt[c]->GetYaxis()->SetTitle("nRecHits");
 		NrecHitsPerChVsEvt[c]->GetXaxis()->SetRangeUser(0,nTotEvents);
 		NrecHitsPerChVsEvt[c]->Draw();
+    namename = "NrecHitsVsEvt_" + chamberNamePlot[i] + "_in_position_" + to_string(chamberPos[i]) + "_run_" + to_string(run);
 		NrecHitsPerChVsEvt[c]->Write(namename.c_str());
 		namename = "NrecHitsVsEvt_Ch_Pos_" + to_string(chamberPos[i]) + ".png";
 		Canvas->SaveAs(namename.c_str());
@@ -188,6 +193,7 @@ void macro_certify_events(int run, string configDir)
 		NrecHitsPerChDistribution[c]->GetXaxis()->SetTitle("nRecHits");
 		NrecHitsPerChDistribution[c]->GetYaxis()->SetTitle("Counts");
 		NrecHitsPerChDistribution[c]->Draw();
+    namename = "NrecHitsDistribution_" + chamberNamePlot[i] + "_in_position_" + to_string(chamberPos[i]) + "_run_" + to_string(run);
 		NrecHitsPerChDistribution[c]->Write(namename.c_str());
 		namename = "NrecHitsDistribution_Ch_Pos_" + to_string(chamberPos[i]) + ".png";
 		Canvas->SaveAs(namename.c_str());

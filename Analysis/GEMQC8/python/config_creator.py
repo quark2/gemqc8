@@ -16,7 +16,7 @@ def configMaker(run_number):
 
 	runPath = os.path.join(os.environ[ "CMSSW_BASE" ], 'src/Analysis/GEMQC8/test/')
 
-	infileName = configTablesPath + "StandGeometryConfiguration_run" + run_number + ".csv"
+	infileName = configTablesPath + "StandGeometryConfiguration_run" + str(run_number) + ".csv"
 
 	with open(infileName) as infile:
 		for line in infile:
@@ -27,15 +27,15 @@ def configMaker(run_number):
 					sys.exit('StandGeometryConfiguration file has something wrong: run rumber not matching...')
 
 	out_name = 'out_run_'
-	for i in range(6-len(run_number)):
+	for i in range(6-len(str(run_number))):
 	    out_name = out_name + '0'
-	out_name = out_name + run_number + '.root'
+	out_name = out_name + str(run_number) + '.root'
 
 	outfileName = runPath + "configureRun_cfi.py"
 
 	outfile = open(outfileName,"w")
 
-	outfile.write('RunNumber = ' + run_number + '\n\n')
+	outfile.write('RunNumber = ' + str(run_number) + '\n\n')
 
 	outfile.write('# Output file name definition\n')
 	outfile.write('OutputFileName = \'' + out_name + '\'\n\n')
@@ -78,7 +78,7 @@ def configMaker(run_number):
 	outfile.close()
 
 	print("\n")
-	print("Success: configuration file created for run " + run_number)
+	print("Success: configuration file created for run " + str(run_number))
 	print("\n")
 
 if __name__ == '__main__':
