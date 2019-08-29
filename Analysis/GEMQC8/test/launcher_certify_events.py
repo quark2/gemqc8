@@ -16,13 +16,13 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Different paths definition
-    srcPath = os.path.abspath("launcher_certify_events.py").split('QC8Test')[0]+'QC8Test/src/'
-    pyhtonModulesPath = os.path.abspath("launcher_certify_events.py").split('QC8Test')[0]+'QC8Test/src/Analysis/GEMQC8/python/'
-    runPath = os.path.abspath("launcher_certify_events.py").split('QC8Test')[0] + 'QC8Test/src/Analysis/GEMQC8/test/'
-    configTablesPath = os.path.abspath("launcher_certify_events.py").split('QC8Test')[0] + 'QC8Test/src/Analysis/GEMQC8/data/StandConfigurationTables/'
-    alignmentTablesPath = os.path.abspath("launcher_certify_events.py").split('QC8Test')[0] + 'QC8Test/src/Analysis/GEMQC8/data/StandAligmentTables/'
-    certEvtsTablesPath = os.path.abspath("launcher_certify_events.py").split('QC8Test')[0] + 'QC8Test/src/Analysis/GEMQC8/data/CertifiedEvents/'
-    resDirPath = os.path.abspath("launcher_certify_events.py").split('QC8Test')[0]
+    srcPath = os.path.join(os.environ[ "CMSSW_BASE" ], "src")
+    pyhtonModulesPath = os.path.join(srcPath, "Analysis/GEMQC8/python/")
+    runPath = os.path.join(srcPath, "Analysis/GEMQC8/test/")
+    configTablesPath = os.path.join(srcPath, "Analysis/GEMQC8/data/StandConfigurationTables/")
+    alignmentTablesPath = os.path.join(srcPath, "Analysis/GEMQC8/data/StandAligmentTables/")
+    certEvtsTablesPath = os.path.join(srcPath, "Analysis/GEMQC8/data/CertifiedEvents/")
+    resDirPath = os.path.join(os.environ[ "CMSSW_BASE" ], "../")
 
     sys.path.insert(0,pyhtonModulesPath)
 
@@ -101,7 +101,7 @@ if __name__ == '__main__':
     time.sleep(1)
 
     # Efficiency computation & output
-    effoutDir = os.path.abspath("launcher_certify_events.py").split('QC8Test')[0] + outDirName
+    effoutDir = os.path.join(resDirPath, outDirName)
     effCommand = "root -l -q " + runPath + "macro_certify_events.c(" + str(args.run_number) + ",\"" + configTablesPath + "\")"
     efficiency = subprocess.Popen(effCommand.split(),stdout=subprocess.PIPE,universal_newlines=True,cwd=effoutDir)
     while efficiency.poll() is None:

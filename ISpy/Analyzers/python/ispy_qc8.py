@@ -98,7 +98,8 @@ process.gemRecHits = cms.EDProducer("GEMRecHitProducer",
 )
 
 # Get certified events from file
-pyhtonModulesPath = os.path.abspath("runGEMCosmicStand_validation.py").split('QC8Test')[0]+'QC8Test/src/Analysis/GEMQC8/python/'
+srcPath = os.path.join(os.environ[ "CMSSW_BASE" ], "src")
+pyhtonModulesPath = os.path.join(srcPath, "Analysis/GEMQC8/python/")
 sys.path.insert(2,pyhtonModulesPath)
 from readCertEvtsFromFile import GetCertifiedEvents
 certEvts = GetCertifiedEvents(run_number)

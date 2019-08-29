@@ -4,10 +4,10 @@ import os, sys, io
 def convertHotDead(run_number,typeOfTable):
 
 	if (typeOfTable == "hot"):
-		hotTablesPath = os.path.abspath("convertHotDeadStripsTables.py").split('QC8Test')[0] + 'QC8Test/src/Analysis/GEMQC8/data/HotStripsTables/'
+		hotTablesPath = os.path.join(os.environ[ "CMSSW_BASE" ], 'src/Analysis/GEMQC8/data/HotStripsTables/')
 		infileName = hotTablesPath + "HotStrips_run" + str(run_number) + "_ToDB.csv"
 	elif (typeOfTable == "dead"):
-		deadTablesPath = os.path.abspath("convertHotDeadStripsTables.py").split('QC8Test')[0] + 'QC8Test/src/Analysis/GEMQC8/data/DeadStripsTables/'
+		deadTablesPath = os.path.join(os.environ[ "CMSSW_BASE" ], 'src/Analysis/GEMQC8/data/DeadStripsTables/')
 		infileName = deadTablesPath + "DeadStrips_run" + str(run_number) + "_ToDB.csv"
 	else: print("This mask type does not exist!")
 

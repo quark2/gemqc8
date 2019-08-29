@@ -4,7 +4,7 @@ import os, sys, io
 def convertAlignment(run_number,typeOfTable):
 
 	if (typeOfTable == "alignment"):
-		alignmentTablesPath = os.path.abspath("convertTables.py").split('QC8Test')[0] + 'QC8Test/src/Analysis/GEMQC8/data/StandAligmentTables/'
+		alignmentTablesPath = os.path.join(os.environ[ "CMSSW_BASE" ], 'src/Analysis/GEMQC8/data/StandAligmentTables/')
 		infileName = alignmentTablesPath + "StandAlignmentValues_run" + str(run_number) + "_ToDB.csv"
 	else: print("This mask type does not exist!")
 

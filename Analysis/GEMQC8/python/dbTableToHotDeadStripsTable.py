@@ -5,12 +5,14 @@ from rawIDmapping import map
 def SwMappingHotDeadStrips(run_number,mask_reason):
 
     if (mask_reason == "hot"):
-        hotStripsTablesPath = os.path.abspath("dbTableToHotDeadStripsTable.py").split('QC8Test')[0] + 'QC8Test/src/Analysis/GEMQC8/data/HotStripsTables/'
+        srcPath = os.path.join(os.environ[ "CMSSW_BASE" ], "src")
+        hotStripsTablesPath = os.path.join(srcPath, "Analysis/GEMQC8/data/HotStripsTables/")
         in_name = hotStripsTablesPath + "HotStrips_run{0}.csv".format(run_number)
         TheFileName = in_name.split('/')[-1]
         outfile_name = hotStripsTablesPath + "Mask_" + TheFileName[:-4] + '.dat'
     elif (mask_reason == "dead"):
-        deadStripsTablesPath = os.path.abspath("dbTableToHotDeadStripsTable.py").split('QC8Test')[0] + 'QC8Test/src/Analysis/GEMQC8/data/DeadStripsTables/'
+        srcPath = os.path.join(os.environ[ "CMSSW_BASE" ], "src")
+        deadStripsTablesPath = os.path.join(srcPath, "Analysis/GEMQC8/data/DeadStripsTables/")
         in_name = deadStripsTablesPath + "DeadStrips_run{0}.csv".format(run_number)
         TheFileName = in_name.split('/')[-1]
         outfile_name = deadStripsTablesPath + "Mask_" + TheFileName[:-4] + '.dat'

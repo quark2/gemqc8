@@ -188,7 +188,8 @@ process.load('RecoMuon.TrackingTools.MuonServiceProxy_cff')
 process.MuonServiceProxy.ServiceParameters.Propagators.append('StraightLinePropagator')
 
 # Validation - Get certified events from file
-pyhtonModulesPath = os.path.abspath("runGEMCosmicStand_sim.py").split('QC8Test')[0]+'QC8Test/src/Analysis/GEMQC8/python/'
+srcPath = os.path.join(os.environ[ "CMSSW_BASE" ], "src")
+pyhtonModulesPath = os.path.join(srcPath, "Analysis/GEMQC8/python/")
 sys.path.insert(1,pyhtonModulesPath)
 from readCertEvtsFromFile import GetCertifiedEvents
 certEvts = GetCertifiedEvents(run_number)

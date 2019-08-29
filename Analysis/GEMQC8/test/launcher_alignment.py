@@ -17,11 +17,11 @@ def cmsRunner(split):
   time.sleep(1)
 
 def align_stopper(run_number, step):
-  runPath = os.path.abspath("geometry_files_creator.py").split('QC8Test')[0] + 'QC8Test/src/Analysis/GEMQC8/test/'
+  runPath = os.path.join(srcPath, "Analysis/GEMQC8/test/")
   sys.path.insert(0,runPath)
   dx = []
   rz = []
-  alignmentTablesPath = os.path.abspath("align_stopper.py").split('QC8Test')[0] + 'QC8Test/src/Analysis/GEMQC8/data/StandAligmentTables/'
+  alignmentTablesPath = os.path.join(srcPath, "Analysis/GEMQC8/data/StandAligmentTables/")
   infileName = alignmentTablesPath + "StandAlignmentValues_run" + str(run_number) + "_step" + str(step) + ".csv"
   stop = 0
   stop_align = False
@@ -59,12 +59,11 @@ if __name__ == '__main__':
   args = parser.parse_args()
 
   # Different paths definition
-  srcPath = os.path.abspath("launcher_alignment.py").split('QC8Test')[0]+'QC8Test/src/'
-  pyhtonModulesPath = os.path.abspath("launcher_alignment.py").split('QC8Test')[0]+'QC8Test/src/Analysis/GEMQC8/python/'
-  runPath = os.path.abspath("launcher_alignment.py").split('QC8Test')[0] + 'QC8Test/src/Analysis/GEMQC8/test/'
-  configTablesPath = os.path.abspath("launcher_alignment.py").split('QC8Test')[0] + 'QC8Test/src/Analysis/GEMQC8/data/StandConfigurationTables/'
-  alignmentTablesPath = os.path.abspath("launcher_alignment.py").split('QC8Test')[0] + 'QC8Test/src/Analysis/GEMQC8/data/StandAligmentTables/'
-  resDirPath = os.path.abspath("launcher_alignment.py").split('QC8Test')[0]
+  srcPath = os.path.join(os.environ[ "CMSSW_BASE" ], "src")
+  pyhtonModulesPath = os.path.join(srcPath, "Analysis/GEMQC8/python/")
+  runPath = os.path.join(srcPath, "Analysis/GEMQC8/test/")
+  alignmentTablesPath = os.path.join(srcPath, "Analysis/GEMQC8/data/StandAligmentTables/")
+  resDirPath = os.path.join(os.environ[ "CMSSW_BASE" ], "../")
 
   sys.path.insert(0,pyhtonModulesPath)
 
@@ -132,7 +131,7 @@ if __name__ == '__main__':
 
     # Create folders for ouput plots per chamber
     SuperChType = runConfig.StandConfiguration
-    alignoutDir = os.path.abspath("launcher_alignment.py").split('QC8Test')[0] + outDirName
+    alignoutDir = os.path.join(resDirPath, outDirName)
     for i in range (0,30):
       if (SuperChType[int(i/2)] != '0'):
         plotsDirCommand = "mkdir outPlots_Chamber_Pos_" + str(i)
@@ -200,7 +199,7 @@ if __name__ == '__main__':
   # Create folders for ouput plots per chamber
   import configureRun_cfi as runConfig
   SuperChType = runConfig.StandConfiguration
-  tilttwistoutDir = os.path.abspath("launcher_alignment.py").split('QC8Test')[0] + outDirName
+  tilttwistoutDir = os.path.join(resDirPath, outDirName)
   for i in range (0,30):
     if (SuperChType[int(i/2)] != '0'):
       plotsDirCommand = "mkdir outPlots_Chamber_Pos_" + str(i)

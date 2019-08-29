@@ -215,6 +215,7 @@ process.muonGEMDigis.useDBEMap = True
 process.muonGEMDigis.unPackStatusDigis = True
 
 # Getting hot and dead strips files
+# Well, in this stage nobody takes care about that; see the below. Just for avoiding a blame of CMSSW.
 run_number_tmp = run_number
 run_number = 150
 hotStripsFile = "Analysis/GEMQC8/data/HotStripsTables/Mask_HotStrips_run" + str(run_number) + ".dat"
@@ -230,7 +231,7 @@ process.gemRecHits = cms.EDProducer("GEMRecHitProducer",
                                     gemDigiLabel = cms.InputTag("muonGEMDigis"),
                                     maskFile = cms.FileInPath(hotStripsFile),
                                     deadFile = cms.FileInPath(deadStripsFile),
-                                    applyMasking = cms.bool(False)
+                                    applyMasking = cms.bool(False) # See, nobody cares. :P
                                     )
 
 # Get certified events from file
